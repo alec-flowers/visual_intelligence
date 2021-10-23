@@ -16,12 +16,13 @@ def plot_data(dataloader, n_images=4):
     plt.show()
 
 
-def plot_image(image):
-    plt.xticks([])
-    plt.yticks([])
-    plt.grid(False)
-    plt.imshow(image)
+def plot_image_grid(images, n_images):
+    for i in range(n_images):
+        plt.subplot(int(np.sqrt(n_images)), int(np.sqrt(n_images)), i + 1)
+        plt.xticks([])
+        plt.yticks([])
+        plt.grid(False)
+        plt.imshow(images[i])
     plt.tight_layout()
     plt.show()
-
 
