@@ -1,10 +1,8 @@
 import argparse
 import os
 import glob
-import cv2.cv2 as cv2
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-from pynput import keyboard
 from shutil import copy2
 
 # allowed inputs
