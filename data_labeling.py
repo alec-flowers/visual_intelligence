@@ -7,29 +7,31 @@ import matplotlib.image as mpimg
 from pynput import keyboard
 from shutil import copy2
 
-valid_inputs = ['b', 'g', 'e', 'u']
-valid_inputs_noenter = [keyboard.KeyCode.from_char('b'), keyboard.KeyCode.from_char('g'),
-                        keyboard.KeyCode.from_char('e'), keyboard.KeyCode.from_char('u')]
-
+# allowed inputs
+VALID_INPUTS = ['b', 'g', 'e', 'u']
+# directories where files will be saved according to selection
 GOOD_DIR = 'good'
 BAD_DIR = 'bad'
 UNSURE_DIR = 'unsure'
 
 
 def main(args):
+    # init
+    print('Image labeling')
+    print('Init...')
+    print('Creating folder structure...')
     create_struct(args.t)
+    print('Done.')
     img_files = glob.glob(os.path.join(args.s, "*.jpg"))
-    for img_file in img_files:
-        # img = cv2.imread(img_file)
-        # img = resize_img(img)
-        # # image = cv2.resize(image, (500, 500))
-        # cv2.imshow('Mediapipe Feed', img)
-        # cv2.waitKey()
+    print(f'# images to label: {len(img_files)}')
+    print('Instructions:')
+    print('g - image is a good image')
+    print('b - image is a bad image')
+    print('u - unsure about image')
+    print('e - exit this script')
+    for idx, img_file in enumerate(img_files):
+        print(f"{idx + 1}/{len(img_files)}")
         show_image(img_file)
-        # sel = selection_noenter()
-        # if sel == keyboard.KeyCode.from_char('e'):
-        #     break
-        # plt.close()
         sel = selection()
         if sel == 'e':
             exit(0)
@@ -38,6 +40,10 @@ def main(args):
 
 
 def create_struct(trg_dir):
+    """
+    Creates directory structure where labeled images will be saved.
+    :param trg_dir: directory under which structure will be created
+    """
     try:
         os.mkdir(trg_dir)
     except FileExistsError as e:
@@ -57,6 +63,10 @@ def create_struct(trg_dir):
 
 
 def show_image(img_file):
+    """
+    Reads and show an image file.
+    :param img_file: File to read and show
+    """
     img = mpimg.imread(img_file)
     plt.imshow(img)
     plt.xticks([])
@@ -65,23 +75,11 @@ def show_image(img_file):
     plt.show(block=False)
 
 
-def resize_img(img):
-    height, width = img.shape[:2]
-    max_height = 400
-    max_width = 400
-
-    # only shrink if img is bigger than required
-    if max_height < height or max_width < width:
-        # get scaling factor
-        scaling_factor = max_height / float(height)
-        if max_width / float(width) < scaling_factor:
-            scaling_factor = max_width / float(width)
-        # resize image
-        img = cv2.resize(img, None, fx=scaling_factor, fy=scaling_factor, interpolation=cv2.INTER_AREA)
-    return img
-
-
 def folder_selection(sel):
+    """
+    Selects the folder based on user input.
+    :param sel: user input
+    """
     if sel == 'b':
         return BAD_DIR
     elif sel == 'g':
@@ -90,32 +88,24 @@ def folder_selection(sel):
         return UNSURE_DIR
 
 
-def selection_noenter():
-    with keyboard.Events() as events:
-        while True:
-            # Block for as much as possible
-            event = events.get()
-            if event.key not in valid_inputs_noenter:
-                print(f"Your selection {event.key} is not in valid inputs {valid_inputs_noenter}")
-            else:
-                break
-    return event.key
-
-
 def selection():
+    """
+    Gets user input.
+    :return: user input
+    """
     sel = None
-    while sel not in valid_inputs:
-        sel = input("You select: ")
-        if sel not in valid_inputs:
-            print(f"Your selection {sel} is not in valid inputs {valid_inputs}")
+    while sel not in VALID_INPUTS:
+        sel = input("[g | b | u | e]: ")
+        if sel not in VALID_INPUTS:
+            print(f"Your selection {sel} is not in valid inputs {VALID_INPUTS}!")
     return sel
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Data labeling tool.')
-    parser.add_argument("-s", "--source_directory", type=str,
+    parser.add_argument("-s", type=str,
                         required=True, help="Directory that contains the images to label.")
-    parser.add_argument("-t", "--target_directory", type=str,
+    parser.add_argument("-t", type=str,
                         required=True, help="Directory that will contain the labeled images.")
     return parser.parse_args()
 
