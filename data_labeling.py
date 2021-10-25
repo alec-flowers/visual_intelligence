@@ -109,6 +109,6 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    # args = parse_args()
-    args = argparse.Namespace(s="Good Yoga/Downward-Facing_Dog_pose_or_Adho_Mukha_Svanasana_", t="test")
+    args = parse_args()
+    # args = argparse.Namespace(s="Good Yoga/Downward-Facing_Dog_pose_or_Adho_Mukha_Svanasana_", t="test")
     main(args)
