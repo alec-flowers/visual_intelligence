@@ -8,9 +8,9 @@ from shutil import copy2
 # allowed inputs
 VALID_INPUTS = ['b', 'g', 'e', 'u']
 # directories where files will be saved according to selection
-GOOD_DIR = 'good'
-BAD_DIR = 'bad'
-UNSURE_DIR = 'unsure'
+GOOD_DIR = '1_'
+BAD_DIR = '0_'
+UNSURE_DIR = '2_'
 
 
 def main(args):
@@ -18,7 +18,7 @@ def main(args):
     print('Image labeling')
     print('Init...')
     print('Creating folder structure...')
-    create_struct(args.t)
+    create_struct(args.t, args.p)
     print('Done.')
     img_files = glob.glob(os.path.join(args.s, "*.jpg"))
     print(f'# images to label: {len(img_files)}')
@@ -37,7 +37,7 @@ def main(args):
         copy2(img_file, os.path.join(args.t, folder_decision))
 
 
-def create_struct(trg_dir):
+def create_struct(trg_dir, pose):
     """
     Creates directory structure where labeled images will be saved.
     :param trg_dir: directory under which structure will be created
@@ -47,15 +47,15 @@ def create_struct(trg_dir):
     except FileExistsError as e:
         pass
     try:
-        os.mkdir(os.path.join(trg_dir, GOOD_DIR))
+        os.mkdir(os.path.join(trg_dir, GOOD_DIR + pose))
     except FileExistsError as e:
         pass
     try:
-        os.mkdir(os.path.join(trg_dir, BAD_DIR))
+        os.mkdir(os.path.join(trg_dir, BAD_DIR + pose))
     except FileExistsError as e:
         pass
     try:
-        os.mkdir(os.path.join(trg_dir, UNSURE_DIR))
+        os.mkdir(os.path.join(trg_dir, UNSURE_DIR + pose))
     except FileExistsError as e:
         pass
 
@@ -105,6 +105,8 @@ def parse_args():
                         required=True, help="Directory that contains the images to label.")
     parser.add_argument("-t", type=str,
                         required=True, help="Directory that will contain the labeled images.")
+    parser.add_argument("-p", type=str,
+                        required=True, choices={"downwardDog", "warrior1", "warrior2"}, help="Name of Pose you are classfying")
     return parser.parse_args()
 
 
