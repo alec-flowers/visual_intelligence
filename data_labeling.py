@@ -6,7 +6,7 @@ import matplotlib.image as mpimg
 from shutil import copy2
 
 # allowed inputs
-VALID_INPUTS = ['b', 'g', 'e', 'u']
+VALID_INPUTS = ['b', 'g', 'e', 'u', 'd']
 # directories where files will be saved according to selection
 GOOD_DIR = 'good'
 BAD_DIR = 'bad'
@@ -26,6 +26,7 @@ def main(args):
     print('g - image is a good image')
     print('b - image is a bad image')
     print('u - unsure about image')
+    print('u - do not copy image')
     print('e - exit this script')
     for idx, img_file in enumerate(img_files):
         print(f"{idx + 1}/{len(img_files)}")
@@ -33,6 +34,8 @@ def main(args):
         sel = selection()
         if sel == 'e':
             exit(0)
+        elif sel == 'd':
+            continue
         folder_decision = folder_selection(sel)
         copy2(img_file, os.path.join(args.t, folder_decision))
 
@@ -93,7 +96,7 @@ def selection():
     """
     sel = None
     while sel not in VALID_INPUTS:
-        sel = input("[g | b | u | e]: ")
+        sel = input("[g | b | u | d| e]: ")
         if sel not in VALID_INPUTS:
             print(f"Your selection {sel} is not in valid inputs {VALID_INPUTS}!")
     return sel
