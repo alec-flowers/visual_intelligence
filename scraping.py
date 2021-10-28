@@ -10,6 +10,8 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
+from utils import save_pickle, load_pickle
+
 # SOURCE AND HOW TO INSTALL DEPENDENCIES ON LINUX
 # Source Read: https://ladvien.com/scraping-internet-for-magic-symbols/
 # Source YouTube: https://www.youtube.com/watch?v=Yt6Gay8nuy0
@@ -20,14 +22,22 @@ from webdriver_manager.chrome import ChromeDriverManager
 #     Download the corresponding ChromeDriver from here for your main version and put the executable into an accessible location (I use Desktop/Scraping)
 #     Install the Python Selenium package via pip install selenium
 #
-
+DUPLICATES = "duplicates.pickle"
 
 def main(args):
     print("Scraping Images")
-    scrape_images(search_path=args.p, out_path=args.t, max_n_downloads=args.n, keyword=args.k)
+    if os.path.exists(os.path.join(args.t, DUPLICATES)):
+        duplicate = load_pickle(args.t, DUPLICATES)
+    else:
+        print("duplicates.pickle not found, creating duplicates dict")
+        duplicate = {}
+
+    duplicate = scrape_images(search_path=args.p, out_path=args.t, max_n_downloads=args.n, keyword=args.k, duplicate=duplicate)
+    save_pickle(duplicate, args.t, DUPLICATES)
+    print("Duplicate Pickle Saved")
 
 
-def download_image(url, folder_name, num, keyword):
+def download_image(url, folder_name, num, keyword, duplicate):
     """
     Download the scraped image given an url, the folder and the image number
     :param url: url of the image
@@ -40,13 +50,14 @@ def download_image(url, folder_name, num, keyword):
     # Write image to file
     reponse = requests.get(url)
     if reponse.status_code == 200:
-        with open(os.path.join(folder_name, keyword + str(num) + ".jpg"), 'wb') as file:
+        with open(os.path.join(folder_name, keyword + "_" + str(num) + ".jpg"), 'wb') as file:
             file.write(reponse.content)
+        duplicate[url] = keyword + "_" + str(num) + ".jpg"
 
 
 
 
-def scrape_images(search_path, out_path, max_n_downloads, keyword):
+def scrape_images(search_path, out_path, max_n_downloads, keyword, duplicate):
     """
     Function that scrapes images from Google (using Chrome browser).
     You have to specify the search path (enter query in google, navigate to images, copy-paste the url).
@@ -133,7 +144,6 @@ def scrape_images(search_path, out_path, max_n_downloads, keyword):
             if image_url != preview_image_url:
                 # print("actual URL", image_url)
                 break
-
             else:
                 # making a timeout if the full res image can't be loaded
                 current_time = time.time()
@@ -144,16 +154,21 @@ def scrape_images(search_path, out_path, max_n_downloads, keyword):
 
         # Downloading image
         try:
-            download_image(image_url, folder_name, i, keyword)
-            print("Downloaded element %s out of %s total. URL: %s" % (i, n_images, image_url))
+            if image_url not in duplicate:
+                download_image(image_url, folder_name, i, keyword, duplicate)
+                print("Downloaded element %s out of %s total. URL: %s" % (i, n_images, image_url))
+            else:
+                print("Duplicate element not saved URL: %s" % (image_url))
         except:
             print("Couldn't download an image %s, continuing downloading the next one" % (i))
+
+    return duplicate
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Data labeling tool.')
     parser.add_argument("-p", type=str,
                         required=True, help="Web search path to look for images")
-    parser.add_argument("-k", type=int,
+    parser.add_argument("-k", type=str,
                         required=True, help="Web Search Keyword used to look up images.")
     parser.add_argument("-t", type=str,
                         required=True, help="Directory that will download the images too.")
