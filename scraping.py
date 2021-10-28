@@ -1,5 +1,6 @@
 import os
 import time
+import argparse
 
 import bs4
 import numpy as np
@@ -20,13 +21,13 @@ from webdriver_manager.chrome import ChromeDriverManager
 #     Install the Python Selenium package via pip install selenium
 #
 
-# Parameters
-DRIVER_PATH = "./scraping/chromedriver"
-OUTPUT_PATH = "./scraping/scraped_data/"
-max_n_to_download = 2  # Max number of images to download
+
+def main(args):
+    print("Scraping Images")
+    scrape_images(search_path=args.p, out_path=args.t, max_n_downloads=args.n, keyword=args.k)
 
 
-def download_image(url, folder_name, num):
+def download_image(url, folder_name, num, keyword):
     """
     Download the scraped image given an url, the folder and the image number
     :param url: url of the image
@@ -39,11 +40,13 @@ def download_image(url, folder_name, num):
     # Write image to file
     reponse = requests.get(url)
     if reponse.status_code == 200:
-        with open(os.path.join(folder_name, str(num) + ".jpg"), 'wb') as file:
+        with open(os.path.join(folder_name, keyword + str(num) + ".jpg"), 'wb') as file:
             file.write(reponse.content)
 
 
-def scrape_images(search_path, out_path, dir_name, max_n_downloads):
+
+
+def scrape_images(search_path, out_path, max_n_downloads, keyword):
     """
     Function that scrapes images from Google (using Chrome browser).
     You have to specify the search path (enter query in google, navigate to images, copy-paste the url).
@@ -62,7 +65,7 @@ def scrape_images(search_path, out_path, dir_name, max_n_downloads):
     :type max_n_downloads: int
     """
     # Create directory for images
-    folder_name = out_path + dir_name
+    folder_name = out_path
     if not os.path.isdir(folder_name):
         os.makedirs(folder_name)
 
@@ -141,35 +144,51 @@ def scrape_images(search_path, out_path, dir_name, max_n_downloads):
 
         # Downloading image
         try:
-            download_image(image_url, folder_name, i)
+            download_image(image_url, folder_name, i, keyword)
             print("Downloaded element %s out of %s total. URL: %s" % (i, n_images, image_url))
         except:
             print("Couldn't download an image %s, continuing downloading the next one" % (i))
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Data labeling tool.')
+    parser.add_argument("-p", type=str,
+                        required=True, help="Web search path to look for images")
+    parser.add_argument("-k", type=int,
+                        required=True, help="Web Search Keyword used to look up images.")
+    parser.add_argument("-t", type=str,
+                        required=True, help="Directory that will download the images too.")
+    parser.add_argument("-n", type=int,
+                        required=True, help="Number of photos to scrape.")
+    return parser.parse_args()
 
+
+if __name__ == '__main__':
+    args = parse_args()
+    # args = argparse.Namespace(s="Good Yoga/Downward-Facing_Dog_pose_or_Adho_Mukha_Svanasana_", t="test")
+    main(args)
 # Query: yoga warrior two
 # "https://www.google.com/search?q=yoga%20warrior%20two%20-one%20-reverse&tbm=isch&tbs=rimg:CS26H6M0OM6hYWCmsFeo2fqDsgIGCgIIABAA&hl=en-US&sa=X&ved=0CBsQuIIBahcKEwj4zvXZzezzAhUAAAAAHQAAAAAQBg&biw=859&bih=847"
-PATH_W_2 = "https://www.google.com/search?q=yoga+warrior+two+&tbm=isch&ved=2ahUKEwiO1YrLzuzzAhUNixoKHbQKCf0Q2" \
-           "-cCegQIABAA&oq=yoga+warrior+two+&gs_lcp" \
-           "=CgNpbWcQAzIFCAAQgAQyBggAEAgQHjIGCAAQCBAeUJumbFibpmxg_6dsaABwAHgAgAFHiAGlAZIBATOYAQCgAQGqAQtnd3Mtd2l6LWltZ8ABAQ&sclient=img&ei=YlV6YY6cMI2WarSVpOgP&bih=847&biw=859&hl=en-US "
-dir_W_2 = 'warrior_two'
+# PATH_W_2 = "https://www.google.com/search?q=yoga+warrior+two+&tbm=isch&ved=2ahUKEwiO1YrLzuzzAhUNixoKHbQKCf0Q2" \
+#            "-cCegQIABAA&oq=yoga+warrior+two+&gs_lcp" \
+#            "=CgNpbWcQAzIFCAAQgAQyBggAEAgQHjIGCAAQCBAeUJumbFibpmxg_6dsaABwAHgAgAFHiAGlAZIBATOYAQCgAQGqAQtnd3Mtd2l6LWltZ8ABAQ&sclient=img&ei=YlV6YY6cMI2WarSVpOgP&bih=847&biw=859&hl=en-US "
+# dir_W_2 = 'warrior_two'
+#
+# # Query: yoga warrior one
+# PATH_W_1 = "https://www.google.com/search?q=yoga+warrior+one&tbm=isch&ved=2ahUKEwjJ2d-Z1ezzAhWygM4BHQgoAaIQ2" \
+#            "-cCegQIABAA&oq=yoga+warrior+one&gs_lcp" \
+#            "=CgNpbWcQAzIFCAAQgAQyBggAEAgQHjIGCAAQCBAeMgYIABAIEB4yBAgAEBhQmL8FWI_BBWDAwgVoAHAAeACAAUmIAbwBkgEBM5gBAKABAaoBC2d3cy13aXotaW1nwAEB&sclient=img&ei=Ulx6YcnoFrKBur4PiNCEkAo&bih=847&biw=859&hl=en-US "
+# dir_W_1 = 'warrior_one'
+#
+# # Query: yoga downward dog
+# PATH_D_D = "https://www.google.com/search?q=yoga+downward+dog&tbm=isch&ved=2ahUKEwjK48DF1ezzAhUigHMKHUygAhYQ2" \
+#            "-cCegQIABAA&oq=yoga+downward+dog&gs_lcp" \
+#            "=CgNpbWcQAzIFCAAQgAQyBQgAEIAEMgUIABCABDIGCAAQBRAeMgYIABAFEB4yBggAEAUQHjIGCAAQCBAeMgYIABAIEB4yBggAEAgQHjIGCAAQCBAeOgQIABAYOgQIABAeUJjQBVjM2wVgueAFaABwAHgAgAFEiAHvBZIBAjEzmAEAoAEBqgELZ3dzLXdpei1pbWfAAQE&sclient=img&ei=rlx6YcrUCKKAzgPMwIqwAQ&bih=847&biw=859&hl=en-US "
+# dir_D_D = 'downward_dog'
 
-# Query: yoga warrior one
-PATH_W_1 = "https://www.google.com/search?q=yoga+warrior+one&tbm=isch&ved=2ahUKEwjJ2d-Z1ezzAhWygM4BHQgoAaIQ2" \
-           "-cCegQIABAA&oq=yoga+warrior+one&gs_lcp" \
-           "=CgNpbWcQAzIFCAAQgAQyBggAEAgQHjIGCAAQCBAeMgYIABAIEB4yBAgAEBhQmL8FWI_BBWDAwgVoAHAAeACAAUmIAbwBkgEBM5gBAKABAaoBC2d3cy13aXotaW1nwAEB&sclient=img&ei=Ulx6YcnoFrKBur4PiNCEkAo&bih=847&biw=859&hl=en-US "
-dir_W_1 = 'warrior_one'
-
-# Query: yoga downward dog
-PATH_D_D = "https://www.google.com/search?q=yoga+downward+dog&tbm=isch&ved=2ahUKEwjK48DF1ezzAhUigHMKHUygAhYQ2" \
-           "-cCegQIABAA&oq=yoga+downward+dog&gs_lcp" \
-           "=CgNpbWcQAzIFCAAQgAQyBQgAEIAEMgUIABCABDIGCAAQBRAeMgYIABAFEB4yBggAEAUQHjIGCAAQCBAeMgYIABAIEB4yBggAEAgQHjIGCAAQCBAeOgQIABAYOgQIABAeUJjQBVjM2wVgueAFaABwAHgAgAFEiAHvBZIBAjEzmAEAoAEBqgELZ3dzLXdpei1pbWfAAQE&sclient=img&ei=rlx6YcrUCKKAzgPMwIqwAQ&bih=847&biw=859&hl=en-US "
-dir_D_D = 'downward_dog'
-
-# Scrape images
-# Warrior 1
-scrape_images(search_path=PATH_W_1, out_path=OUTPUT_PATH, dir_name=dir_W_1, max_n_downloads=max_n_to_download)
-# Warrior 2
-scrape_images(search_path=PATH_W_2, out_path=OUTPUT_PATH, dir_name=dir_W_2, max_n_downloads=max_n_to_download)
-# Downward dog
-scrape_images(search_path=PATH_D_D, out_path=OUTPUT_PATH, dir_name=dir_D_D, max_n_downloads=max_n_to_download)
+# # Scrape images
+# # Warrior 1
+# scrape_images(search_path=PATH_W_1, out_path=OUTPUT_PATH, dir_name=dir_W_1, max_n_downloads=max_n_to_download)
+# # Warrior 2
+# scrape_images(search_path=PATH_W_2, out_path=OUTPUT_PATH, dir_name=dir_W_2, max_n_downloads=max_n_to_download)
+# # Downward dog
+# scrape_images(search_path=PATH_D_D, out_path=OUTPUT_PATH, dir_name=dir_D_D, max_n_downloads=max_n_to_download)

@@ -36,9 +36,11 @@ def main(args):
             exit(0)
             break
         elif sel == 'd':
+            os.remove(img_file)
             continue
         folder_decision = folder_selection(sel)
-        copy2(img_file, os.path.join(args.t, folder_decision))
+        copy2(img_file, os.path.join(args.t, folder_decision+args.p))
+        os.remove(img_file)
 
 
 def create_struct(trg_dir, pose):
@@ -46,10 +48,10 @@ def create_struct(trg_dir, pose):
     Creates directory structure where labeled images will be saved.
     :param trg_dir: directory under which structure will be created
     """
-    try:
-        os.mkdir(trg_dir)
-    except FileExistsError as e:
-        pass
+    # try:
+    #     os.mkdir(trg_dir + pose)
+    # except FileExistsError as e:
+    #     pass
     try:
         os.mkdir(os.path.join(trg_dir, GOOD_DIR + pose))
     except FileExistsError as e:
