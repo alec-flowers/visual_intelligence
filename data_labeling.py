@@ -26,7 +26,7 @@ def main(args):
     print('g - image is a good image')
     print('b - image is a bad image')
     print('u - unsure about image')
-    print('u - do not copy image')
+    print('d - do not copy image')
     print('e - exit this script')
     for idx, img_file in enumerate(img_files):
         print(f"{idx + 1}/{len(img_files)}")
@@ -34,6 +34,7 @@ def main(args):
         sel = selection()
         if sel == 'e':
             exit(0)
+            break
         elif sel == 'd':
             continue
         folder_decision = folder_selection(sel)
