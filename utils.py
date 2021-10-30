@@ -1,8 +1,13 @@
 import pickle
 import os
+import pathlib
 
-TRAINPATH = "./data/train"
-TESTPATH = "./data/test"
+REPO_ROOT = pathlib.Path(__file__).absolute().parents[0].resolve()
+assert (REPO_ROOT.exists())
+TRAINPATH = (REPO_ROOT / "data" / "train").absolute().resolve()
+assert (TRAINPATH.exists())
+TESTPATH = (REPO_ROOT / "data" / "test").absolute().resolve()
+assert (TESTPATH.exists())
 
 
 def save_pickle(data, path, file):

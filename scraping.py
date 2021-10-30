@@ -24,6 +24,7 @@ from utils import save_pickle, load_pickle
 #
 DUPLICATES = "duplicates.pickle"
 
+
 def main(args):
     print("Scraping Images")
     if os.path.exists(os.path.join(args.t, DUPLICATES)):
@@ -163,6 +164,7 @@ def scrape_images(search_path, out_path, max_n_downloads, keyword, duplicate):
             print("Couldn't download an image %s, continuing downloading the next one" % (i))
 
     return duplicate
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Data labeling tool.')
