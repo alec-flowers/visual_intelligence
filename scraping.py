@@ -24,6 +24,7 @@ from utils import save_pickle, load_pickle
 #
 DUPLICATES = "duplicates.pickle"
 
+
 def main(args):
     print("Scraping Images")
     if os.path.exists(os.path.join(args.t, DUPLICATES)):
@@ -35,6 +36,11 @@ def main(args):
     duplicate = scrape_images(search_path=args.p, out_path=args.t, max_n_downloads=args.n, keyword=args.k, duplicate=duplicate)
     save_pickle(duplicate, args.t, DUPLICATES)
     print("Duplicate Pickle Saved")
+
+
+def scroll_to_end(driver, sleep_between_interactions=5):
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    time.sleep(sleep_between_interactions)
 
 
 def download_image(url, folder_name, num, keyword, duplicate):
@@ -53,8 +59,6 @@ def download_image(url, folder_name, num, keyword, duplicate):
         with open(os.path.join(folder_name, keyword + "_" + str(num) + ".jpg"), 'wb') as file:
             file.write(reponse.content)
         duplicate[url] = keyword + "_" + str(num) + ".jpg"
-
-
 
 
 def scrape_images(search_path, out_path, max_n_downloads, keyword, duplicate):
@@ -90,13 +94,13 @@ def scrape_images(search_path, out_path, max_n_downloads, keyword, duplicate):
     containers = page_soup.findAll('div', {'class': "isv-r PNCib MSM1fd BUooTd"})
 
     len_containers = len(containers)
-    # //*[@id="islrg"]/div[1]/div[1]/a[1]/div[1]
 
-    # Determine number of images to download
-    n_images = min(len_containers, max_n_downloads)
-
-    for i in range(1, n_images + 1):
-        if i % 25 == 0:
+    for i in range(1, max_n_downloads + 1):
+        if i % 47 == 0:
+            scroll_to_end(driver)
+            containers = page_soup.findAll('div', {'class': "isv-r PNCib MSM1fd BUooTd"})
+            len_containers = len(containers)
+            print(len_containers)
             continue
 
         x_path = """//*[@id="islrg"]/div[1]/div[%s]""" % (i)
@@ -163,6 +167,7 @@ def scrape_images(search_path, out_path, max_n_downloads, keyword, duplicate):
             print("Couldn't download an image %s, continuing downloading the next one" % (i))
 
     return duplicate
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Data labeling tool.')
