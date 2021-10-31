@@ -9,7 +9,7 @@ mp_pose = mp.solutions.pose
 
 
 def poses_for_dataset(dataloader):
-    assert dataloader.batch_size == None
+    assert dataloader.batch_size is None
 
     result_list = []
     annotated_images = []

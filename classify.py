@@ -12,5 +12,3 @@ if  __name__ == "__main__":
 
     # Do the pose estimation
     estimated_poses, annotated_images = poses_for_dataset(dataloader)
-    a = estimated_poses[0]
-    save_pickle(estimated_poses[0], "./data", "one_estimated_pose.pickle")
