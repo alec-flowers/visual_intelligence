@@ -33,9 +33,12 @@ def main(args):
         print("duplicates.pickle not found, creating duplicates dict")
         duplicate = {}
 
-    duplicate = scrape_images(search_path=args.p, out_path=args.t, max_n_downloads=args.n, keyword=args.k, duplicate=duplicate)
-    save_pickle(duplicate, args.t, DUPLICATES)
-    print("Duplicate Pickle Saved")
+    scrape_images(search_path=args.p, out_path=args.t, max_n_downloads=args.n, keyword=args.k, duplicate=duplicate)
+
+
+def scroll_to_end(driver, sleep_between_interactions=5):
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    time.sleep(sleep_between_interactions)
 
 
 def download_image(url, folder_name, num, keyword, duplicate):
@@ -54,8 +57,6 @@ def download_image(url, folder_name, num, keyword, duplicate):
         with open(os.path.join(folder_name, keyword + "_" + str(num) + ".jpg"), 'wb') as file:
             file.write(reponse.content)
         duplicate[url] = keyword + "_" + str(num) + ".jpg"
-
-
 
 
 def scrape_images(search_path, out_path, max_n_downloads, keyword, duplicate):
@@ -91,14 +92,15 @@ def scrape_images(search_path, out_path, max_n_downloads, keyword, duplicate):
     containers = page_soup.findAll('div', {'class': "isv-r PNCib MSM1fd BUooTd"})
 
     len_containers = len(containers)
-    # //*[@id="islrg"]/div[1]/div[1]/a[1]/div[1]
 
-    # Determine number of images to download
-    n_images = min(len_containers, max_n_downloads)
-
-    for i in range(1, n_images + 1):
+    for i in range(1, max_n_downloads + 1):
         if i % 25 == 0:
             continue
+        if i % 48 == 0:
+            scroll_to_end(driver)
+            containers = page_soup.findAll('div', {'class': "isv-r PNCib MSM1fd BUooTd"})
+            len_containers = len(containers)
+            print(len_containers)
 
         x_path = """//*[@id="islrg"]/div[1]/div[%s]""" % (i)
 
@@ -111,8 +113,11 @@ def scrape_images(search_path, out_path, max_n_downloads, keyword, duplicate):
 
         driver.find_element(By.XPATH, x_path).click()
 
+        # element = driver.find_element(By.XPATH, x_path)
+        # driver.execute_script("arguments[0].click();", element)
+
         # Sleep a random time after clicking on the image
-        time.sleep(np.random.randint(5, 10))
+        time.sleep(np.random.randint(1, 5))
 
         # //*[@id="islrg"]/div[1]/div[16]/a[1]/div[1]/img
 
@@ -157,13 +162,14 @@ def scrape_images(search_path, out_path, max_n_downloads, keyword, duplicate):
         try:
             if image_url not in duplicate:
                 download_image(image_url, folder_name, i, keyword, duplicate)
-                print("Downloaded element %s out of %s total. URL: %s" % (i, n_images, image_url))
+                save_pickle(duplicate, out_path, DUPLICATES)
+                print("Downloaded element %s out of %s total. URL: %s" % (i, max_n_downloads, image_url))
             else:
                 print("Duplicate element not saved URL: %s" % (image_url))
+
         except:
             print("Couldn't download an image %s, continuing downloading the next one" % (i))
 
-    return duplicate
 
 
 def parse_args():

@@ -20,7 +20,7 @@ def main(args):
     print('Creating folder structure...')
     create_struct(args.t, args.p)
     print('Done.')
-    img_files = glob.glob(os.path.join(args.s, "*.jpg"))
+    img_files = glob.glob(os.path.join(args.s, "*.jp*"))
     print(f'# images to label: {len(img_files)}')
     print('Instructions:')
     print('g - image is a good image')
