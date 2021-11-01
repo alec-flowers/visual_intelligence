@@ -59,7 +59,7 @@ def load_data(path=TRAINPATH, resize=300, batch_size=32, shuffle=True, batch_sam
 
     dataset = ClassifyDataset(path, transform=transform)
     if subset:
-        indices = torch.arange(20)
+        indices = torch.arange(100)
         dataset = Subset(dataset, indices)
 
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, batch_sampler=batch_sampler)

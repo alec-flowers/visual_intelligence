@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 
 
 def plot_data(dataloader, n_images=4):
@@ -16,8 +17,9 @@ def plot_data(dataloader, n_images=4):
     plt.show()
 
 
-def plot_image(image, label, title=''):
-    image = image.numpy().transpose((1, 2, 0))
+def plot_image(image, dataloader=False, label=None, title=''):
+    if dataloader:
+        image = image.numpy().transpose((1, 2, 0))
     plt.xticks([])
     plt.yticks([])
     plt.grid(False)
@@ -28,13 +30,17 @@ def plot_image(image, label, title=''):
     plt.show()
 
 
-def plot_image_grid(images, n_images):
+def plot_image_grid(images, n_images, dataloader=False):
     for i in range(n_images):
-        plt.subplot(int(np.sqrt(n_images)), int(np.sqrt(n_images)), i + 1)
+        if dataloader:
+            image = images[i].numpy().transpose((1, 2, 0))
+        else:
+            image = images[i]
+        plt.subplot(math.ceil(np.sqrt(n_images)), math.ceil(np.sqrt(n_images)), i + 1)
         plt.xticks([])
         plt.yticks([])
         plt.grid(False)
-        plt.imshow(images[i])
+        plt.imshow(image)
     plt.tight_layout()
     plt.show()
 

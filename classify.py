@@ -5,7 +5,7 @@ from pose import poses_for_dataset
 
 if  __name__ == "__main__":
     # Define parameters
-    shuffle = True
+    shuffle = False
 
     # Load the data
     dataset, dataloader = load_data(path=TRAINPATH, batch_size=None, shuffle=shuffle, subset=True)

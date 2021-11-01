@@ -2,6 +2,7 @@ import cv2
 import mediapipe as mp
 import numpy as np
 from plot import *
+from tqdm import tqdm
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
@@ -13,7 +14,7 @@ def poses_for_dataset(dataloader):
 
     result_list = []
     annotated_images = []
-    for image, label in dataloader:
+    for image, label in tqdm(dataloader):
         results, annotated = estimate_poses(image, label)
         result_list.append(results)
         annotated_images.append(annotated)
