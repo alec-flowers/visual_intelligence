@@ -5,6 +5,7 @@ from torch.utils.data import Dataset, DataLoader, Subset
 from utils import *
 from PIL import Image
 from collections import OrderedDict
+import numpy as np
 
 from typing import Any, Callable, Optional, Tuple, List, Dict
 
@@ -48,11 +49,9 @@ class ClassifyDataset(ImageFolder):
         return classes, class_to_idx
 
 
-
-
 def load_data(path=TRAINPATH, resize=300, batch_size=32, shuffle=True, batch_sampler=None, subset=False) -> Tuple[ClassifyDataset, DataLoader]:
-    transform = (transforms.Compose([transforms.Resize(resize),
-                                     transforms.CenterCrop(resize-1),
+    transform = (transforms.Compose([#transforms.Resize(resize),
+                                     #transforms.CenterCrop(resize-1),
                                      #transforms.Grayscale(num_output_channels=3),
                                      transforms.ToTensor(),
                                      transforms.ConvertImageDtype(torch.uint8)]))
@@ -65,3 +64,24 @@ def load_data(path=TRAINPATH, resize=300, batch_size=32, shuffle=True, batch_sam
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, batch_sampler=batch_sampler)
 
     return dataset, dataloader
+
+
+class CoordinatesDataset(Dataset):
+    def __init__(self, coordinates, labels, set_type, split_ratio=0.8):
+        split_idx = int(split_ratio * coordinates.shape[0])
+        if set_type == "train":
+            self.coordinates = coordinates[:split_idx]
+            self.labels = labels[:split_idx]
+        elif set_type == "val":
+            self.coordinates = coordinates[split_idx:]
+            self.labels = labels[split_idx:]
+
+    def __len__(self):
+        return self.labels.shape[0]
+
+    def __getitem__(self, idx):
+        assert 0 <= idx < len(self)
+        coordinates = self.coordinates[idx]
+        label = self.labels[idx]
+
+        return coordinates, label
