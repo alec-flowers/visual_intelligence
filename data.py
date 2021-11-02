@@ -19,6 +19,27 @@ def pil_loader(path: str) -> Image.Image:
         return img.convert("RGB")
 
 
+class CoordinatesDataset(Dataset):
+    def __init__(self, coordinates, labels, set_type, split_ratio=0.8):
+        split_idx = int(split_ratio * coordinates.shape[0])
+        if set_type == "train":
+            self.coordinates = coordinates[:split_idx]
+            self.labels = labels[:split_idx]
+        elif set_type == "val":
+            self.coordinates = coordinates[split_idx:]
+            self.labels = labels[split_idx:]
+
+    def __len__(self):
+        return self.labels.shape[0]
+
+    def __getitem__(self, idx):
+        assert 0 <= idx < len(self)
+        coordinates = self.coordinates[idx]
+        label = self.labels[idx]
+
+        return coordinates, label
+
+
 class ClassifyDataset(ImageFolder):
     def __init__(
             self,
@@ -49,16 +70,21 @@ class ClassifyDataset(ImageFolder):
         return classes, class_to_idx
 
 
-def load_data(path=TRAINPATH, resize=300, batch_size=32, shuffle=True, batch_sampler=None, subset=False) -> Tuple[ClassifyDataset, DataLoader]:
-    transform = (transforms.Compose([#transforms.Resize(resize),
-                                     #transforms.CenterCrop(resize-1),
-                                     #transforms.Grayscale(num_output_channels=3),
-                                     transforms.ToTensor(),
-                                     transforms.ConvertImageDtype(torch.uint8)]))
-
+def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=True, batch_sampler=None, subset=False) -> Tuple[ClassifyDataset, DataLoader]:
+    if resize:
+        resize_size=300
+        transform = (transforms.Compose([transforms.Resize(resize_size),
+                                         transforms.CenterCrop(resize_size-1),
+                                         #transforms.Grayscale(num_output_channels=3),
+                                         transforms.ToTensor(),
+                                         transforms.ConvertImageDtype(torch.uint8)]))
+    else:
+        transform = (transforms.Compose([# transforms.Grayscale(num_output_channels=3),
+                                         transforms.ToTensor(),
+                                         transforms.ConvertImageDtype(torch.uint8)]))
     dataset = ClassifyDataset(path, transform=transform)
     if subset:
-        indices = torch.arange(100)
+        indices = torch.arange(10)
         dataset = Subset(dataset, indices)
 
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, batch_sampler=batch_sampler)
@@ -66,14 +92,22 @@ def load_data(path=TRAINPATH, resize=300, batch_size=32, shuffle=True, batch_sam
     return dataset, dataloader
 
 
-class CoordinatesDataset(Dataset):
-    def __init__(self, coordinates, labels, set_type, split_ratio=0.8):
-        split_idx = int(split_ratio * coordinates.shape[0])
+def train_val_split(images, labels, batch_size=32, shuffle=True, split_ratio=0.8):
+    train_dataset = RawImageDataset(images, labels, set_type="train", split_ratio=split_ratio)
+    val_dataset = RawImageDataset(images, labels, set_type="val", split_ratio=split_ratio)
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=shuffle, num_workers=12)
+    val_loader = DataLoader(val_dataset, batch_size=None, shuffle=shuffle)
+    return train_dataloader, val_loader
+
+
+class RawImageDataset(Dataset):
+    def __init__(self, images, labels, set_type, split_ratio=0.8):
+        split_idx = int(split_ratio * images.shape[0])
         if set_type == "train":
-            self.coordinates = coordinates[:split_idx]
+            self.images = images[:split_idx]
             self.labels = labels[:split_idx]
         elif set_type == "val":
-            self.coordinates = coordinates[split_idx:]
+            self.images = images[split_idx:]
             self.labels = labels[split_idx:]
 
     def __len__(self):
@@ -81,7 +115,7 @@ class CoordinatesDataset(Dataset):
 
     def __getitem__(self, idx):
         assert 0 <= idx < len(self)
-        coordinates = self.coordinates[idx]
+        images = self.images[idx]
         label = self.labels[idx]
 
-        return coordinates, label
+        return images, label
