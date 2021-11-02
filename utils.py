@@ -10,6 +10,13 @@ TRAINPATH = (DATAPATH / "train").absolute().resolve()
 assert (TRAINPATH.exists())
 TESTPATH = (DATAPATH / "test").absolute().resolve()
 assert (TESTPATH.exists())
+PICKLEDPATH = (DATAPATH / "pickled_data").absolute().resolve()
+assert (PICKLEDPATH.exists())
+
+POSEDATAFRAME_LIST = ["pose_landmark_all_df.pickle", "pose_landmark_vis_df.pickle",
+                      "pose_landmark_numpy.pickle", "pose_world_landmark_all_df.pickle",
+                      "pose_world_landmark_vis_df.pickle", "pose_world_landmark_numpy.pickle",
+                      "labels_drop_na.pickle", "annotated_images.pickle"]
 
 LANDMARK_NAMES = ['NOSE',
                   'LEFT_EYE_INNER',
@@ -49,6 +56,7 @@ for i in range(33):
     num.append(i)
 LANDMARK_DICT = dict(zip(num, LANDMARK_NAMES))
 
+
 def save_pickle(data, path, file):
     """Save a file as .pickle"""
     filename = os.path.join(path, file)
@@ -62,3 +70,9 @@ def load_pickle(path, file):
     with open(file_path, "rb") as f:
         data = pickle.load(f)
     return data
+
+
+def save_dataframes_to_pickle(path, dataframes, filenames):
+    assert len(dataframes) == len(filenames)
+    for i in range(len(dataframes)):
+        save_pickle(dataframes[i], path, filenames[i])
