@@ -1,10 +1,54 @@
+import os
 import pytorch_lightning as pl
 import torch
 import torchmetrics
 from torch import nn
+from torchvision.datasets import CIFAR10
+from torch.utils.data import DataLoader
+from torchvision import transforms
 
 
-class MLP(pl.LightningModule):
+class MLP(nn.Module):
+    """
+        Multilayer Perceptron.
+    """
+
+    def __init__(self, num_classes):
+        super().__init__()
+        self.layers = nn.Sequential(
+          nn.Flatten(),
+          nn.Linear(33 * 3, 64),
+          nn.SELU(),
+          nn.Linear(64, 32),
+          nn.SELU(),
+          nn.Linear(32, num_classes)
+        )
+
+    def forward(self, x):
+        """Forward pass"""
+        return self.layers(x)
+
+
+class CNN(nn.Module):
+    """
+    CNN
+    """
+
+    def __init__(self, num_classes):
+        super().__init__()
+        self.layers = nn.Sequential(
+            nn.Conv2d(in_channels=32, out_channels=16, kernel_size=3),
+            nn.SELU(),
+            nn.Flatten(),
+            nn.Linear(16, num_classes)
+        )
+
+    def forward(self, x):
+        """Forward pass"""
+        return self.layers(x)
+
+
+class MLP_LIGHT(pl.LightningModule):
     """
     Multilayer Perceptron.
     """
@@ -22,6 +66,7 @@ class MLP(pl.LightningModule):
         self.ce = nn.CrossEntropyLoss()
         self.train_acc = torchmetrics.Accuracy()
         self.valid_acc = torchmetrics.Accuracy()
+        self.save_hyperparameters()
 
     def forward(self, x):
         return self.layers(x)
@@ -55,7 +100,7 @@ class MLP(pl.LightningModule):
         return optimizer
 
 
-class CNN(pl.LightningModule):
+class CNN_LIGHT(pl.LightningModule):
     """
     CNN. Skip the pose estimation, classify on the raw image.
     """
