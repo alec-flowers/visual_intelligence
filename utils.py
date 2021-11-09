@@ -12,6 +12,8 @@ TESTPATH = (DATAPATH / "test").absolute().resolve()
 assert (TESTPATH.exists())
 PICKLEDPATH = (DATAPATH / "pickled_data").absolute().resolve()
 assert (PICKLEDPATH.exists())
+MODEL_PATH = (REPO_ROOT / "saved_model/mlp").absolute().resolve()
+assert (MODEL_PATH.exists())
 
 POSEDATAFRAME_LIST = ["pose_landmark_all_df.pickle", "pose_landmark_vis_df.pickle",
                       "pose_landmark_numpy.pickle", "pose_world_landmark_all_df.pickle",
@@ -49,7 +51,7 @@ LANDMARK_NAMES = ['NOSE',
                   'RIGHT_ANKLE',
                   'LEFT_HEEL',
                   'RIGHT_HEEL',
-                  'LEFT_FOOD_INDEX',
+                  'LEFT_FOOT_INDEX',
                   'RIGHT_FOOT_INDEX']
 num = []
 for i in range(33):

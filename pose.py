@@ -36,12 +36,11 @@ def poses_for_dataset(dataloader):
 
 
 def estimate_poses(image, label, plot=False):
-    BG_COLOR = (192, 192, 192)  # gray
     with mp_pose.Pose(
             static_image_mode=True,
             model_complexity=2,
             enable_segmentation=True,
-            min_detection_confidence=0.5) as pose:
+            min_detection_confidence=0.0) as pose:
         # for i in range(images.shape[0]):
             image = image.numpy().transpose((1, 2, 0))
             image_height, image_width, _ = image.shape
@@ -52,11 +51,7 @@ def estimate_poses(image, label, plot=False):
                 if plot:
                     plot_image(image, label.item(), "Landmark not available")
                 return None, None
-            # print(
-            #    f'Nose coordinates: ('
-            #    f'{results.pose_landmarks.landmark[mp_pose.PoseLandmark.NOSE].x * image_width}, '
-            #    f'{results.pose_landmarks.landmark[mp_pose.PoseLandmark.NOSE].y * image_height})'
-            # )
+
             annotated_image = image.copy()
             # Draw segmentation on the image.
             # To improve segmentation around boundaries, consider applying a joint
@@ -71,7 +66,6 @@ def estimate_poses(image, label, plot=False):
                 results.pose_landmarks,
                 mp_pose.POSE_CONNECTIONS,
                 landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
-            # cv2.imwrite('/tmp/annotated_image' + str(i) + '.png', annotated_image)
             # Plot pose world landmarks.
             if plot:
                 plot_image(annotated_image)
@@ -124,19 +118,19 @@ def pose_to_dataframe(estimated_poses, dataset, pose_var):
 if __name__ == "__main__":
     # Define parameters
     shuffle = True
-    run_from_scratch = False
-    subset = False  # Take a subset of 100 images out of the 660 images?
+    run_from_scratch = True
+    subset = True  # Take a subset of 100 images out of the 660 images?
     save_poses = False  # Save poses after estimated?
 
     # Load the data
-    dataset, dataloader = load_data(path=TRAINPATH, batch_size=None, shuffle=shuffle, subset=subset)
+    dataset, dataloader = load_data(path=TRAINPATH, batch_size=None, shuffle=shuffle, subset=subset, subset_size=9)
 
     # TODO: I suspect the annotated images take lots of memory, for me (Nina) there was an issue when loading them
     #  from the pickle
     if run_from_scratch:
         # Do the pose estimation
         estimated_poses, annotated_images = poses_for_dataset(dataloader)
-
+        plot_annotated_images(annotated_images, 9)
         # NOTE NUMPY DATA TAKES OUT NULLS, will have to take out nulls in labels
         df, df_vis, numpy_data, labels_drop_na = pose_to_dataframe(estimated_poses, dataset, pose_var='pose_landmarks')
         df_world, df_vis_world, numpy_data_world, _ = pose_to_dataframe(estimated_poses, dataset,
