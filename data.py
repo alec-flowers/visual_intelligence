@@ -70,9 +70,9 @@ class ClassifyDataset(ImageFolder):
         return classes, class_to_idx
 
 
-def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=True, batch_sampler=None, subset=False) -> Tuple[ClassifyDataset, DataLoader]:
+def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=True, batch_sampler=None, subset=False, subset_size=100) -> Tuple[ClassifyDataset, DataLoader]:
     if resize:
-        resize_size=300
+        resize_size = 300
         transform = (transforms.Compose([transforms.Resize(resize_size),
                                          transforms.CenterCrop(resize_size-1),
                                          #transforms.Grayscale(num_output_channels=3),
@@ -84,7 +84,7 @@ def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=True, batch_s
                                          transforms.ConvertImageDtype(torch.uint8)]))
     dataset = ClassifyDataset(path, transform=transform)
     if subset:
-        indices = torch.arange(10)
+        indices = torch.arange(subset_size)
         dataset = Subset(dataset, indices)
 
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, batch_sampler=batch_sampler)
