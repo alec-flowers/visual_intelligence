@@ -117,16 +117,14 @@ def pose_to_dataframe(estimated_poses, dataset, pose_var):
 
 if __name__ == "__main__":
     # Define parameters
-    shuffle = True
-    run_from_scratch = True
-    subset = True  # Take a subset of 100 images out of the 660 images?
+    shuffle = False
+    run_from_scratch = False
+    subset = False  # Take a subset of 100 images out of the 660 images?
     save_poses = False  # Save poses after estimated?
 
     # Load the data
-    dataset, dataloader = load_data(path=TRAINPATH, batch_size=None, shuffle=shuffle, subset=subset, subset_size=9)
+    dataset, dataloader = load_data(path=TRAINPATH, batch_size=None, shuffle=shuffle, subset=subset, subset_size=100)
 
-    # TODO: I suspect the annotated images take lots of memory, for me (Nina) there was an issue when loading them
-    #  from the pickle
     if run_from_scratch:
         # Do the pose estimation
         estimated_poses, annotated_images = poses_for_dataset(dataloader)
