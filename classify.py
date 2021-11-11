@@ -10,8 +10,10 @@ from torch.utils.data import DataLoader
 from data import CoordinatesDataset
 # from plot import *
 from model import MLP
-from plot import plot_image_grid
+from plot import plot_image_grid, plot_misclassfied_images
 from utils import load_pickle, PICKLEDPATH, MODEL_PATH
+from torch.utils.tensorboard import SummaryWriter
+
 
 if __name__ == "__main__":
     # Define parameters
@@ -20,16 +22,25 @@ if __name__ == "__main__":
     train_from_scratch = False
     save_model = False
     min_valid_loss = np.inf
+    split_ratio = 0.8
 
     # Model parameters
     batch_size = 64
     epochs = 50
+    # default `log_dir` is "runs" - we'll be more specific here
+    writer = SummaryWriter('runs/')
 
+    # Load annotated images to inspect misclassified ones
+    annotated_images = load_pickle(PICKLEDPATH, "annotated_images.pickle")
+    annotated_images_filtered = []
+    for val in annotated_images:
+        if val is not None:
+            annotated_images_filtered.append(val)
     # Load the data
     numpy_data_world = load_pickle(PICKLEDPATH, "pose_world_landmark_numpy.pickle")
     labels_drop_na = load_pickle(PICKLEDPATH, "labels_drop_na.pickle")
-    train_coordinate_dataset = CoordinatesDataset(numpy_data_world, labels_drop_na, set_type="train")
-    val_coordinate_dataset = CoordinatesDataset(numpy_data_world, labels_drop_na, set_type="val")
+    train_coordinate_dataset = CoordinatesDataset(numpy_data_world, labels_drop_na, set_type="train", split_ratio=split_ratio)
+    val_coordinate_dataset = CoordinatesDataset(numpy_data_world, labels_drop_na, set_type="val", split_ratio=split_ratio)
     # Create train and validation set
     train_loader = DataLoader(train_coordinate_dataset, batch_size=batch_size, shuffle=True, num_workers=12)
     val_loader = DataLoader(val_coordinate_dataset, batch_size=batch_size, num_workers=12)
@@ -82,6 +93,11 @@ if __name__ == "__main__":
                 optimizer.step()
                 current_loss += loss.item()
 
+            # Log the average loss after an epoch
+            writer.add_scalar('training loss',
+                              current_loss / len(train_loader),
+                              epoch)
+
             # Iterate over the DataLoader for validation data
             valid_loss = 0.0
             mlp.eval()  # Optional when not using Model Specific layer
@@ -94,6 +110,10 @@ if __name__ == "__main__":
                 loss = loss_function(outputs, targets)
                 valid_loss += loss.item()
 
+            # Log the average validation loss after an epoch
+            writer.add_scalar('validation loss',
+                              valid_loss / len(val_loader),
+                              epoch)
             if save_model:
                 if min_valid_loss > valid_loss:
                     print(f'Validation Loss Decreased (from {min_valid_loss:.6f} -> {valid_loss:.6f}). Saving The Model...')
@@ -102,8 +122,10 @@ if __name__ == "__main__":
                                str(MODEL_PATH) + f"/mlp_intermediate.ckpt")
             # Print statistics after every epoch
             # if (epoch-1) % 2 == 0:  # Update every 2 epochs
-            print('Loss after epoch %3d: %.3f' %
-                  (epoch + 1, current_loss))
+            print('Average training loss after epoch %3d: %.3f' %
+                  (epoch + 1, current_loss / len(train_loader)))
+            print('Average validation loss after epoch %3d: %.3f' %
+                  (epoch + 1, valid_loss / len(val_loader)))
 
         # Process is complete.
         print('Training process has finished.')
@@ -118,19 +140,19 @@ if __name__ == "__main__":
         mlp.load_state_dict(checkpoint['mlp_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-    # Evaluate the model
-    mlp.eval()
+        # Evaluate the model
+        mlp.eval()
+        with torch.no_grad():
+            # Predict training data
+            inputs = torch.from_numpy(train_coordinate_dataset.coordinates)
+            inputs = inputs.view(inputs.size(0), -1).float()
+            targets = torch.from_numpy(train_coordinate_dataset.labels)
+            predictions = mlp(inputs)
+            predicted_class = np.argmax(predictions, axis=1)
 
-    with torch.no_grad():
-        inputs = torch.from_numpy(train_coordinate_dataset.coordinates)
-        inputs = inputs.view(inputs.size(0), -1).float()
-        targets = torch.from_numpy(train_coordinate_dataset.labels)
-        predictions = mlp(inputs)
-        predicted_class = np.argmax(predictions, axis=1)
-        plot_image_grid(images, n_images, dataloader=False, title="")
+            plot_misclassfied_images(targets, predicted_class, annotated_images_filtered, type="training", max_n_to_plot=16)
+
     mlp
 
-    # TODO visualize coordinates together with labels to verify they are aligned
-    # TODO set up tensorboard again
     # INSPECT training
-    # run in terminal: tensorboard --logdir=tb_logs
+    # run in terminal: tensorboard --logdir=runs
