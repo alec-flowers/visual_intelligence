@@ -115,6 +115,38 @@ def pose_to_dataframe(estimated_poses, dataset, pose_var):
     return df, df_vis, np.array(for_numpy), labels_drop_na
 
 
+def calc_angle(lm_1, lm_2, lm_3, ref=np.array([0, 1, 0])):
+    """
+    Calculates angle between three landmarks in reference to the y-norm vector.
+    :param lm_1: Landmark 1
+    :param lm_2: Landmark 2
+    :param lm_3: Landmark 3
+    :param ref: Reference vector to determine angle from 0° to 360°
+    :return: 0° <= angle < 360°
+    """
+    # landmark prep
+    lms = [lm_1, lm_2, lm_3]
+    for lm in lms.copy():
+        lms.pop(0)
+        lms.append(np.array([lm['x'], lm['y'], lm['z']]))
+    lm_1 = lms[0]
+    lm_2 = lms[1]
+    lm_3 = lms[2]
+    # get the vector with reference to lm_2
+    lm_2_lm_1_vector = lm_1 - lm_2
+    lm_2_lm_3_vector = lm_3 - lm_2
+    # calc angle using https://ch.mathworks.com/matlabcentral/answers/501449-angle-betwen-two-3d-vectors-in-the-range-0-360-degree
+    cross = np.cross(lm_2_lm_3_vector, lm_2_lm_1_vector)
+    sign = np.sign(np.dot(cross, ref))
+    if sign == 0:
+        raise ValueError('Reference Vector, v1 and v2 are in the same plane!')
+    c = sign * np.linalg.norm(cross)
+    angle = np.degrees(np.arctan2(c, np.dot(lm_2_lm_3_vector, lm_2_lm_1_vector)))
+    # get angle between 0 - 360
+    corrected_angle = (angle + 360) % 360
+    return corrected_angle
+
+
 if __name__ == "__main__":
     # Define parameters
     shuffle = True
