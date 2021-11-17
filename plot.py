@@ -97,14 +97,46 @@ def plot_no_pose_photo(df, dataset, num=9):
     plot_image_grid(bad_photos, len(bad_photos), dataloader=True, title="Photos where no pose was detected")
 
 
-def plot_misclassfied_images(targets, predictions, all_images, type="training", max_n_to_plot=16):
-    # Extract images that are misspredicted
-    errors = targets - predictions
-    error_indices = np.where(errors != 0)
-    misclassified_images = [all_images[i] for i in error_indices[0]]
+def find_misclassified_images(difference, all_images, type_, start_index):
+    indices = np.where(difference != 0)
+    np.random.shuffle(indices[0])
+    misclassified_images = None
+    if type_ == 'validation':
+        misclassified_images = [all_images[i+start_index] for i in indices[0]]
+    elif type_ == 'training':
+        misclassified_images = [all_images[i] for i in indices[0]]
+    return misclassified_images, indices
+
+
+def find_correctly_classified_images(difference, all_images, type_, start_index):
+    indices = np.where(difference == 0)
+    np.random.shuffle(indices[0])
+    classified_images = None
+    if type_ == 'validation':
+        classified_images = [all_images[i+start_index] for i in indices[0]]
+    elif type_ == 'training':
+        classified_images = [all_images[i] for i in indices[0]]
+    return classified_images, indices
+
+
+def plot_classfied_images(targets, predictions, all_images, type_="training",
+                          max_n_to_plot=16, classified="misclassified", split_ratio=0.8):
+    indices = None
+    start_index = None
+    classified_images = None
+    if type_ == 'validation':
+        start_index = int(split_ratio * len(all_images))
+    # Extract images that are miss-predicted
+    difference = targets - predictions
+    if classified == 'misclassified':
+        classified_images, indices = find_misclassified_images(difference, all_images, type_, start_index)
+    elif classified == 'correctly classified':
+        classified_images, indices = find_correctly_classified_images(difference, all_images, type_, start_index)
+    print(f"{len(classified_images)} out of {len(difference)} {type_} images were {classified}.")
     # Create subplot titles, consisting of targets and predictions
-    subplot_title = list(zip([targets[i].item() for i in error_indices[0]],
-                             [predictions[i].item() for i in error_indices[0]]))
-    plot_n_images = min(len(misclassified_images), max_n_to_plot)
-    plot_image_grid(misclassified_images[:plot_n_images], plot_n_images, dataloader=False,
-                    title=f"Misclassified {type} images", subplot_title=subplot_title)
+    subplot_title = list(zip([targets[i].item() for i in indices[0]],
+                             [predictions[i].item() for i in indices[0]]))
+    plot_n_images = min(len(classified_images), max_n_to_plot)
+    plot_image_grid(classified_images[:plot_n_images], plot_n_images, dataloader=False,
+                    title=f"{classified} {type_} images", subplot_title=subplot_title)
+

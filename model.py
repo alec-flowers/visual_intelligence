@@ -18,8 +18,10 @@ class MLP(nn.Module):
         self.layers = nn.Sequential(
           nn.Flatten(),
           nn.Linear(33 * 3, 64),
+          nn.BatchNorm1d(num_features=64),
           nn.SELU(),
           nn.Linear(64, 32),
+          nn.BatchNorm1d(num_features=32),
           nn.SELU(),
           nn.Linear(32, num_classes)
         )
