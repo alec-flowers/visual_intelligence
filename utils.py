@@ -21,6 +21,40 @@ POSEDATAFRAME_LIST = ["pose_landmark_all_df.pickle", "pose_landmark_vis_df.pickl
                       "pose_world_landmark_vis_df.pickle", "pose_world_landmark_numpy.pickle",
                       "labels_drop_na.pickle", "annotated_images.pickle"]
 
+"""
+0: Downward Dog
+1: Warrior I
+2: Warrior II
+"""
+CLASS_MAPPINGS_NAMES = {
+    0: "DD",
+    1: "W1",
+    2: "W2",
+    3: "DD",
+    4: "W1",
+    5: "W2",
+}
+CLASS_MAPPINGS_IDX = {
+    0: 0,
+    1: 1,
+    2: 2,
+    3: 0,
+    4: 1,
+    5: 2,
+}
+"""
+0: bad
+1: good
+"""
+POSE_QUALITY_MAPPINGS = {
+    0: 0,
+    1: 0,
+    2: 0,
+    3: 1,
+    4: 1,
+    5: 1,
+}
+
 LANDMARK_NAMES = ['NOSE',
                   'LEFT_EYE_INNER',
                   'LEFT_EYE',
@@ -116,7 +150,10 @@ def calc_angle(lm_1, lm_2, lm_3, ref=np.array([0, 1, 0])):
     lms = [lm_1, lm_2, lm_3]
     for lm in lms.copy():
         lms.pop(0)
-        lms.append(np.array([lm['x'], lm['y'], lm['z']]))
+        try:
+            lms.append(np.array([lm['x'], lm['y'], lm['z']]))
+        except TypeError:
+            lms.append(np.array([lm[0], lm[1], lm[2]]))
     lm_1 = lms[0]
     lm_2 = lms[1]
     lm_3 = lms[2]
