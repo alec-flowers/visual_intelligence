@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from data import load_data
 from plot import *
-from utils import LANDMARK_DICT, load_pickle
+from utils import LANDMARK_DICT, load_pickle, CLASS_MAPPINGS_IDX, POSE_QUALITY_MAPPINGS
 from utils import TRAINPATH, PICKLEDPATH, save_dataframes_to_pickle, \
     POSEDATAFRAME_LIST
 
@@ -31,14 +31,14 @@ def poses_for_dataset(dataloader):
     for image, label in tqdm(dataloader):
         results, annotated = estimate_poses(image, label)
         result_list.append(results)
-        annotated_images.append(annotated)
+        # annotated_images.append(annotated)
     return result_list, annotated_images
 
 
 def estimate_poses(image, label, plot=False):
     with mp_pose.Pose(
             static_image_mode=True,
-            model_complexity=2,
+            model_complexity=1,
             enable_segmentation=True,
             min_detection_confidence=0.0) as pose:
         # for i in range(images.shape[0]):
@@ -107,8 +107,16 @@ def pose_to_dataframe(estimated_poses, dataset, pose_var):
     labels = []
     for _, label in dataset:
         labels.append(label)
-    df['label'] = labels
-    df_vis['label'] = labels
+    df['tmp'] = labels
+    df_vis['tmp'] = labels
+
+    df['label'] = df.apply(lambda x: CLASS_MAPPINGS_IDX[x['tmp']], axis=1)
+    df['quality'] = df.apply(lambda x: POSE_QUALITY_MAPPINGS[x['tmp']], axis=1)
+    df.drop('tmp', axis=1, inplace=True)
+
+    df_vis['label'] = df_vis.apply(lambda x: CLASS_MAPPINGS_IDX[x['tmp']], axis=1)
+    df_vis['quality'] = df_vis.apply(lambda x: POSE_QUALITY_MAPPINGS[x['tmp']], axis=1)
+    df_vis.drop('tmp', axis=1, inplace=True)
 
     labels_drop_na = np.array(df_vis.dropna(axis=0, how='any')['label'])
 
@@ -118,9 +126,9 @@ def pose_to_dataframe(estimated_poses, dataset, pose_var):
 if __name__ == "__main__":
     # Define parameters
     shuffle = False
-    run_from_scratch = False
+    run_from_scratch = True
     subset = False  # Take a subset of 100 images out of the 660 images?
-    save_poses = False  # Save poses after estimated?
+    save_poses = True  # Save poses after estimated?
 
     # Load the data
     dataset, dataloader = load_data(path=TRAINPATH, batch_size=None, shuffle=shuffle, subset=subset, subset_size=100)
@@ -128,7 +136,7 @@ if __name__ == "__main__":
     if run_from_scratch:
         # Do the pose estimation
         estimated_poses, annotated_images = poses_for_dataset(dataloader)
-        plot_annotated_images(annotated_images, 9)
+        # plot_annotated_images(annotated_images, 9)
         # NOTE NUMPY DATA TAKES OUT NULLS, will have to take out nulls in labels
         df, df_vis, numpy_data, labels_drop_na = pose_to_dataframe(estimated_poses, dataset, pose_var='pose_landmarks')
         df_world, df_vis_world, numpy_data_world, _ = pose_to_dataframe(estimated_poses, dataset,
