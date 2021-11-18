@@ -48,7 +48,6 @@ class ClassifyDataset(ImageFolder):
             transform: Optional[Callable] = None,
             is_valid_file: Optional[Callable[[str], bool]] = None
     ):
-
         super(ImageFolder, self).__init__(
             root,
             loader,
@@ -57,31 +56,35 @@ class ClassifyDataset(ImageFolder):
 
         # drop good/bad/unsure label from classes
         classes, _ = self.find_classes(self.root)
-        self.classes = list({cls.split("_")[-1]: True for cls in classes}.keys())
+        # self.classes = list({cls.split("_")[-1]: True for cls in classes}.keys())
+        self.classes = classes
 
     def find_classes(self, directory: str) -> Tuple[List[str], Dict[str, int]]:
-        classes = sorted(entry.name for entry in os.scandir(directory) if entry.is_dir() and not entry.name.startswith("2_"))
+        classes = sorted(
+            entry.name for entry in os.scandir(directory) if entry.is_dir() and not entry.name.startswith("2_"))
         if not classes:
             raise FileNotFoundError(f"Couldn't find any class folder in {directory}.")
 
         # Map classes to [downwardDog, warrior1, warrior2]
-        class_to_idx = {cls_names: i % 3 for i, cls_names in enumerate(classes)}
+        # class_to_idx = {cls_names: i % 3 for i, cls_names in enumerate(classes)}
+        class_to_idx = {cls_names: i for i, cls_names in enumerate(classes)}
 
         return classes, class_to_idx
 
 
-def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=True, batch_sampler=None, subset=False, subset_size=100) -> Tuple[ClassifyDataset, DataLoader]:
+def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=True, batch_sampler=None, subset=False,
+              subset_size=100) -> Tuple[ClassifyDataset, DataLoader]:
     if resize:
         resize_size = 300
         transform = (transforms.Compose([transforms.Resize(resize_size),
-                                         transforms.CenterCrop(resize_size-1),
-                                         #transforms.Grayscale(num_output_channels=3),
+                                         transforms.CenterCrop(resize_size - 1),
+                                         # transforms.Grayscale(num_output_channels=3),
                                          transforms.ToTensor(),
                                          transforms.ConvertImageDtype(torch.uint8)]))
     else:
-        transform = (transforms.Compose([# transforms.Grayscale(num_output_channels=3),
-                                         transforms.ToTensor(),
-                                         transforms.ConvertImageDtype(torch.uint8)]))
+        transform = (transforms.Compose([  # transforms.Grayscale(num_output_channels=3),
+            transforms.ToTensor(),
+            transforms.ConvertImageDtype(torch.uint8)]))
     dataset = ClassifyDataset(path, transform=transform)
     if subset:
         indices = torch.arange(subset_size)
@@ -119,3 +122,16 @@ class RawImageDataset(Dataset):
         label = self.labels[idx]
 
         return images, label
+
+
+def create_angle_features(df):
+    for angle_name, lms in LANDMARKS_ANGLES_DICT.items():
+        df[angle_name] = df.apply(lambda x: calc_angle(x[lms[0]], x[lms[1]], x[lms[2]]), axis=1)
+
+
+if __name__ == '__main__':
+    df_world = load_pickle(DATAPATH, "pose_world_landmark_all_df.pickle")
+    df_world = df_world.dropna(axis=0, how='any')
+    for angle_name, lms in LANDMARKS_ANGLES_DICT.items():
+        df_world[angle_name] = df_world.apply(lambda x: calc_angle(x[lms[0]], x[lms[1]], x[lms[2]]), axis=1)
+    print("YOLO")
