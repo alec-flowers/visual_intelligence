@@ -112,7 +112,8 @@ class GoodBadDataset(ImageFolder):
         return classes, class_to_idx
 
 
-def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=True, batch_sampler=None, subset=False, subset_size=100, classify=True) -> Tuple[ClassifyDataset, DataLoader]:
+def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=True, batch_sampler=None, subset=False, classify=True
+              subset_size=100) -> Tuple[ClassifyDataset, DataLoader]:
     if resize:
         resize_size = 300
         transform = (transforms.Compose([transforms.Resize(resize_size),
@@ -166,8 +167,15 @@ class RawImageDataset(Dataset):
 
         return images, label
 
-# if __name__ == "__main__":
-#     dataset = ImageFolder(root=TRAINPATH)
-#     b = dataset.class_to_idx
-#     dataset2, _ = load_data(path=TRAINPATH, classify=False, subset=True)
-#     c = dataset2.classes
+
+def create_angle_features(df):
+    for angle_name, lms in LANDMARKS_ANGLES_DICT.items():
+        df[angle_name] = df.apply(lambda x: calc_angle(x[lms[0]], x[lms[1]], x[lms[2]]), axis=1)
+
+
+if __name__ == '__main__':
+    df_world = load_pickle(DATAPATH, "pose_world_landmark_all_df.pickle")
+    df_world = df_world.dropna(axis=0, how='any')
+    for angle_name, lms in LANDMARKS_ANGLES_DICT.items():
+        df_world[angle_name] = df_world.apply(lambda x: calc_angle(x[lms[0]], x[lms[1]], x[lms[2]]), axis=1)
+    print("YOLO")

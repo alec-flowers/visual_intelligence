@@ -21,6 +21,40 @@ POSEDATAFRAME_LIST = ["pose_landmark_all_df.pickle", "pose_landmark_vis_df.pickl
                       "pose_world_landmark_vis_df.pickle", "pose_world_landmark_numpy.pickle",
                       "labels_drop_na.pickle", "annotated_images.pickle"]
 
+"""
+0: Downward Dog
+1: Warrior I
+2: Warrior II
+"""
+CLASS_MAPPINGS_NAMES = {
+    0: "DD",
+    1: "W1",
+    2: "W2",
+    3: "DD",
+    4: "W1",
+    5: "W2",
+}
+CLASS_MAPPINGS_IDX = {
+    0: 0,
+    1: 1,
+    2: 2,
+    3: 0,
+    4: 1,
+    5: 2,
+}
+"""
+0: bad
+1: good
+"""
+POSE_QUALITY_MAPPINGS = {
+    0: 0,
+    1: 0,
+    2: 0,
+    3: 1,
+    4: 1,
+    5: 1,
+}
+
 LANDMARK_NAMES = ['NOSE',
                   'LEFT_EYE_INNER',
                   'LEFT_EYE',
@@ -59,6 +93,28 @@ for i in range(33):
     num.append(i)
 LANDMARK_DICT = dict(zip(num, LANDMARK_NAMES))
 
+LANDMARKS_ANGLES_DICT = {
+    'LEFT_ELBOW_ANGLE': [11, 13, 15],
+    'RIGHT_ELBOW_ANGLE': [12, 14, 16],
+    'LEFT_ARMPIT_ANGLE': [13, 11, 23],
+    'RIGHT_ARMPIT_ANGLE': [14, 12, 24],
+    'LEFT_CHEST_ANGLE': [13, 11, 12],
+    'RIGHT_CHEST_ANGLE': [14, 12, 11],
+    'LEFT_WRIST_ANGLE': [19, 15, 13],
+    'RIGHT_WRIST_ANGLE': [20, 16, 14],
+    'LEFT_KNEE_ANGLE': [23, 25, 27],
+    'RIGHT_KNEE_ANGLE': [24, 26, 28],
+    'LEFT_HIPFLEXOR_ANGLE': [11, 23, 25],
+    'RIGHT_HIPFLEXOR_ANGLE': [12, 24, 26],
+    'LEFT_ADDUCTOR_ANGLE': [24, 23, 25],
+    'RIGHT_ADDUCTOR_ANGLE': [23, 24, 26],
+    'LEFT_ANKLE_ANGLE': [25, 27, 31],
+    'RIGHT_ANKLE_ANGLE': [26, 28, 32],
+}
+LANDMARKS_ANGLES_DICT = {
+    key: [LANDMARK_DICT[idx] for idx in value] for key, value in LANDMARKS_ANGLES_DICT.items()
+}
+
 
 def save_pickle(data, path, file):
     """Save a file as .pickle"""
@@ -94,7 +150,10 @@ def calc_angle(lm_1, lm_2, lm_3, ref=np.array([0, 1, 0])):
     lms = [lm_1, lm_2, lm_3]
     for lm in lms.copy():
         lms.pop(0)
-        lms.append(np.array([lm['x'], lm['y'], lm['z']]))
+        try:
+            lms.append(np.array([lm['x'], lm['y'], lm['z']]))
+        except TypeError:
+            lms.append(np.array([lm[0], lm[1], lm[2]]))
     lm_1 = lms[0]
     lm_2 = lms[1]
     lm_3 = lms[2]

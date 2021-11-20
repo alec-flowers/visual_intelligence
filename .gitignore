@@ -252,6 +252,7 @@ cython_debug/
 # End of https://www.toptal.com/developers/gitignore/api/python,pycharm
 
 data/
+archiv/
 data/*
 .DS_Store
 .DS_Store/
