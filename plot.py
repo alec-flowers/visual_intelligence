@@ -1,6 +1,11 @@
+import math
+
 import matplotlib.pyplot as plt
 import numpy as np
-import math
+import seaborn as sns
+from sklearn.metrics import confusion_matrix
+
+from utils import PLOT_PATH
 
 
 def plot_data(dataloader, n_images=4):
@@ -119,8 +124,8 @@ def find_correctly_classified_images(difference, all_images, type_, start_index)
     return classified_images, indices
 
 
-def plot_classfied_images(targets, predictions, all_images, type_="training",
-                          max_n_to_plot=16, classified="misclassified", split_ratio=0.8):
+def plot_classified_images(targets, predictions, all_images, type_="training",
+                           max_n_to_plot=16, classified="misclassified", split_ratio=0.8):
     indices = None
     start_index = None
     classified_images = None
@@ -139,4 +144,22 @@ def plot_classfied_images(targets, predictions, all_images, type_="training",
     plot_n_images = min(len(classified_images), max_n_to_plot)
     plot_image_grid(classified_images[:plot_n_images], plot_n_images, dataloader=False,
                     title=f"{classified} {type_} images", subplot_title=subplot_title)
+
+
+def plot_confusion_matrix(targets, predicted, title=None, save_plot=False):
+    class_names = ["DD", "W1", "W2"]
+    conf_mat = confusion_matrix(targets.numpy(), predicted.numpy())
+    fig = sns.heatmap(conf_mat, annot=True,
+                      cmap=sns.color_palette("light:#5A9", as_cmap=True),
+                      cbar_kws={'label': 'count'}, fmt='g')
+    plt.xlabel("Predicted label")
+    plt.ylabel("True label")
+    plt.title("Confusion matrix for the " + title + " data")
+    tick_marks = np.arange(len(class_names)) + 0.5
+    plt.xticks(tick_marks, class_names, rotation=90)
+    plt.yticks(tick_marks, class_names, rotation=0)
+    plt.tight_layout()
+    if save_plot:
+        fig.figure.savefig(PLOT_PATH + title + "_data_confusion_matrix.png")
+    plt.show()
 
