@@ -104,7 +104,7 @@ def train_val_split(images, labels, batch_size=32, shuffle=True, split_ratio=0.8
     train_dataset = RawImageDataset(images, labels, set_type="train", split_ratio=split_ratio)
     val_dataset = RawImageDataset(images, labels, set_type="val", split_ratio=split_ratio)
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=shuffle, num_workers=12)
-    val_loader = DataLoader(val_dataset, batch_size=None, shuffle=shuffle)
+    val_loader = DataLoader(val_dataset, batch_size=200, shuffle=shuffle)
     return train_dataloader, val_loader
 
 

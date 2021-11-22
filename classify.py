@@ -49,7 +49,7 @@ if __name__ == "__main__":
         # Load a previously trained model that has the following stats:
         # Average training after epoch    50| Loss: 0.382 | Acc: 0.953
         # Average validation after epoch  50| Loss: 0.821 | Acc: 0.907
-        checkpoint = torch.load(str(MODEL_PATH) + "/2021_11_22_20_46_21.ckpt")
+        checkpoint = torch.load(str(MODEL_PATH) + "/mlp" + "/2021_11_22_20_46_21.ckpt")
         mlp.load_state_dict(checkpoint['model_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 

@@ -17,7 +17,7 @@ def plot_data(dataloader, n_images=4):
         plt.yticks([])
         plt.grid(False)
         plt.imshow(image)
-        plt.xlabel(dataloader.dataset.classes[labels[i].item()])
+        plt.xlabel(labels[i].item())
     plt.tight_layout()
     plt.show()
 
