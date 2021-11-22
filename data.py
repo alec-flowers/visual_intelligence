@@ -112,8 +112,8 @@ class GoodBadDataset(ImageFolder):
         return classes, class_to_idx
 
 
-def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=True, batch_sampler=None, subset=False, classify=True
-              subset_size=100) -> Tuple[ClassifyDataset, DataLoader]:
+def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=True, batch_sampler=None, subset=False,
+              classify=True, subset_size=100) -> Tuple[ClassifyDataset, DataLoader]:
     if resize:
         resize_size = 300
         transform = (transforms.Compose([transforms.Resize(resize_size),

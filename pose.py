@@ -31,7 +31,7 @@ def poses_for_dataset(dataloader):
     for image, label in tqdm(dataloader):
         results, annotated = estimate_poses(image, label)
         result_list.append(results)
-        # annotated_images.append(annotated)
+        annotated_images.append(annotated)
     return result_list, annotated_images
 
 
@@ -129,9 +129,10 @@ if __name__ == "__main__":
     run_from_scratch = True
     subset = False  # Take a subset of 100 images out of the 660 images?
     save_poses = True  # Save poses after estimated?
+    classify=False
 
     # Load the data
-    dataset, dataloader = load_data(path=TRAINPATH, batch_size=None, shuffle=shuffle, subset=subset, subset_size=100)
+    dataset, dataloader = load_data(path=TRAINPATH, batch_size=None, shuffle=shuffle, subset=subset, subset_size=100, classify=classify)
 
     if run_from_scratch:
         # Do the pose estimation
