@@ -7,25 +7,25 @@ from torch.utils.tensorboard import SummaryWriter
 
 from data import get_not_none_annotated_images, get_data
 from model import MLP
+from plot import plot_classified_images, plot_confusion_matrix
 from test import evaluate_mlp
 from train import train_model
 from utils import MODEL_PATH
 
 if __name__ == "__main__":
     # Define parameters
+    save_plot = False
     shuffle = True
     train_from_scratch = False
-    save_model = False
+    save_model = train_from_scratch
     min_valid_loss = np.inf
     split_ratio = 0.8
 
     # Model parameters
     batch_size = 64
-    epochs = 25
+    epochs = 50
 
-    writer = SummaryWriter('runs/')
-    # TODO we have to shuffle the data somehow, bc rn we have only dd in our validation data ...
-    # Maybe shuffle but keep the indices such that for the annotated images we now how to sort them?
+    writer = SummaryWriter('runs/mlp/')
     # Load the data
     train_loader, val_loader, train_coordinate_dataset, val_coordinate_dataset = get_data(batch_size, split_ratio)
     # Configure the training logging
@@ -47,24 +47,39 @@ if __name__ == "__main__":
 
     else:
         # Load a previously trained model that has the following stats:
-        # Average training after epoch  25  | Loss: 0.411 | Acc: 0.918
-        # Average validation after epoch  25| Loss: 0.230 | Acc: 0.953
-        checkpoint = torch.load(str(MODEL_PATH) + "/2021_11_17_06_40_29.ckpt")
+        # Average training after epoch    50| Loss: 0.382 | Acc: 0.953
+        # Average validation after epoch  50| Loss: 0.821 | Acc: 0.907
+        checkpoint = torch.load(str(MODEL_PATH) + "/2021_11_22_20_46_21.ckpt")
         mlp.load_state_dict(checkpoint['model_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
         annotated_images_filtered = get_not_none_annotated_images()
+        if shuffle:
+            annotated_images_filtered = np.array(annotated_images_filtered, dtype=object)[train_coordinate_dataset.index_order]
+
+        targets_train, predicted_class_train = evaluate_mlp(mlp, train_coordinate_dataset)
+        targets_val, predicted_class_val = evaluate_mlp(mlp, val_coordinate_dataset)
+
+        # Confusion matrix
+        plot_confusion_matrix(targets_val, predicted_class_val, 'validation', save_plot=save_plot)
+        plot_confusion_matrix(targets_train, predicted_class_train, 'training', save_plot=save_plot)
 
         # Plot misclassified train images
-        evaluate_mlp(mlp, train_coordinate_dataset, annotated_images_filtered, plot="misclassified", type_="training")
+        plot_classified_images(targets_train, predicted_class_train, annotated_images_filtered,
+                               type_="training", max_n_to_plot=16, classified="misclassified", split_ratio=split_ratio)
         # Plot correctly train classified
-        evaluate_mlp(mlp, train_coordinate_dataset, annotated_images_filtered, plot="correctly classified", type_="training")
+        plot_classified_images(targets_train, predicted_class_train, annotated_images_filtered,
+                               type_="training", max_n_to_plot=16, classified="correctly classified", split_ratio=split_ratio)
+
         # Plot misclassified test images
-        evaluate_mlp(mlp, val_coordinate_dataset, annotated_images_filtered,
-                     plot="misclassified", type_="validation", split_ratio=split_ratio)
+        plot_classified_images(targets_val, predicted_class_val, annotated_images_filtered,
+                               type_="validation", max_n_to_plot=16, classified="misclassified", split_ratio=split_ratio)
+
         # Plot correctly test classified
-        evaluate_mlp(mlp, val_coordinate_dataset, annotated_images_filtered,
-                     plot="correctly classified", type_="validation", split_ratio=split_ratio)
+        plot_classified_images(targets_val, predicted_class_val, annotated_images_filtered,
+                               type_="validation", max_n_to_plot=16, classified="correctly classified",
+                               split_ratio=split_ratio)
+
 
     mlp
 

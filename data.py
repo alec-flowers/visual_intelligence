@@ -1,6 +1,7 @@
 import os
 from typing import Any, Callable, Optional, Tuple, List, Dict
 
+import numpy as np
 import torch
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader, Subset
@@ -20,7 +21,13 @@ def pil_loader(path: str) -> Image.Image:
 
 
 class CoordinatesDataset(Dataset):
-    def __init__(self, coordinates, labels, set_type, split_ratio=0.8):
+    def __init__(self, coordinates, labels, set_type, shuffle=True, split_ratio=0.8):
+        if shuffle:
+            np.random.seed(42)
+            shuffled_indices = np.random.permutation(coordinates.shape[0])
+            coordinates = coordinates[shuffled_indices]
+            labels = labels[shuffled_indices]
+            self.index_order = shuffled_indices
         split_idx = int(split_ratio * coordinates.shape[0])
         if set_type == "train":
             self.coordinates = coordinates[:split_idx]
@@ -138,7 +145,7 @@ def get_data(batch_size, split_ratio):
                                                   split_ratio=split_ratio)
     val_coordinate_dataset = CoordinatesDataset(numpy_data_world, labels_drop_na, set_type="val",
                                                 split_ratio=split_ratio)
-    images, labels = next(iter(val_coordinate_dataset))
+
     # Create train and validation set
     train_loader = DataLoader(train_coordinate_dataset, batch_size=batch_size, shuffle=True, num_workers=12)
     val_loader = DataLoader(val_coordinate_dataset, batch_size=batch_size, num_workers=12)

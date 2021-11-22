@@ -15,6 +15,8 @@ PICKLEDPATH = (DATAPATH / "pickled_data").absolute().resolve()
 assert (PICKLEDPATH.exists())
 MODEL_PATH = (REPO_ROOT / "saved_model/mlp").absolute().resolve()
 assert (MODEL_PATH.exists())
+PLOT_PATH = (REPO_ROOT / "plots").absolute().resolve()
+assert (PLOT_PATH.exists())
 
 POSEDATAFRAME_LIST = ["pose_landmark_all_df.pickle", "pose_landmark_vis_df.pickle",
                       "pose_landmark_numpy.pickle", "pose_world_landmark_all_df.pickle",

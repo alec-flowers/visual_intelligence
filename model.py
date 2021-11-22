@@ -12,17 +12,16 @@ class MLP(nn.Module):
     """
         Multilayer Perceptron.
     """
-
     def __init__(self, num_classes):
         super().__init__()
         self.layers = nn.Sequential(
           nn.Flatten(),
           nn.Linear(33 * 3, 64),
           nn.BatchNorm1d(num_features=64),
-          nn.SELU(),
+          nn.ReLU(),
           nn.Linear(64, 32),
           nn.BatchNorm1d(num_features=32),
-          nn.SELU(),
+          nn.ReLU(),
           nn.Linear(32, num_classes)
         )
 
