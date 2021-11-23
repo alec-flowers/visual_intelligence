@@ -8,7 +8,7 @@ from torch.utils.tensorboard import SummaryWriter
 from data import get_not_none_annotated_images, get_data
 from model import MLP
 from plot import plot_classified_images, plot_confusion_matrix
-from test import evaluate_mlp
+from test import evaluate_model
 from train import train_model
 from utils import MODEL_PATH
 
@@ -57,12 +57,12 @@ if __name__ == "__main__":
         if shuffle:
             annotated_images_filtered = np.array(annotated_images_filtered, dtype=object)[train_coordinate_dataset.index_order]
 
-        targets_train, predicted_class_train = evaluate_mlp(mlp, train_coordinate_dataset)
-        targets_val, predicted_class_val = evaluate_mlp(mlp, val_coordinate_dataset)
+        targets_train, predicted_class_train = evaluate_model(mlp, train_coordinate_dataset, reshape_inputs=True)
+        targets_val, predicted_class_val = evaluate_model(mlp, val_coordinate_dataset, reshape_inputs=True)
 
         # Confusion matrix
-        plot_confusion_matrix(targets_val, predicted_class_val, 'validation', save_plot=save_plot)
-        plot_confusion_matrix(targets_train, predicted_class_train, 'training', save_plot=save_plot)
+        # plot_confusion_matrix(targets_val, predicted_class_val, 'validation', save_plot=save_plot)
+        # plot_confusion_matrix(targets_train, predicted_class_train, 'training', save_plot=save_plot)
 
         # Plot misclassified train images
         plot_classified_images(targets_train, predicted_class_train, annotated_images_filtered,

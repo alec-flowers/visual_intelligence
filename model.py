@@ -34,9 +34,9 @@ class CNN(nn.Module):
     def __init__(self, num_classes):
         super().__init__()
         self.layers = nn.Sequential(
-            transforms.ConvertImageDtype(torch.float32),
-            transforms.Grayscale(num_output_channels=1),
-            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=3),
+            #transforms.ConvertImageDtype(torch.float32),
+            #transforms.Grayscale(num_output_channels=3),
+            nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3),
             nn.SELU(),
             nn.Conv2d(16, 32, kernel_size=5, stride=1, padding=2),
             nn.SELU(),

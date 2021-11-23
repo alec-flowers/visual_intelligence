@@ -77,15 +77,15 @@ class ClassifyDataset(ImageFolder):
         return classes, class_to_idx
 
 
-def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=True, batch_sampler=None, subset=False,
+def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=False, batch_sampler=None, subset=False,
               subset_size=100) -> Tuple[ClassifyDataset, DataLoader]:
     if resize:
         resize_size = 300
         transform = (transforms.Compose([transforms.Resize(resize_size),
                                          transforms.CenterCrop(resize_size - 1),
-                                         # transforms.Grayscale(num_output_channels=3),
+                                         transforms.Grayscale(num_output_channels=3),
                                          transforms.ToTensor(),
-                                         transforms.ConvertImageDtype(torch.uint8)]))
+                                         transforms.ConvertImageDtype(torch.float32)]))
     else:
         transform = (transforms.Compose([  # transforms.Grayscale(num_output_channels=3),
             transforms.ToTensor(),
@@ -94,6 +94,7 @@ def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=True, batch_s
     if subset:
         indices = torch.arange(subset_size)
         dataset = Subset(dataset, indices)
+        shuffle = True
 
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, batch_sampler=batch_sampler)
 
@@ -101,15 +102,23 @@ def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=True, batch_s
 
 
 def train_val_split(images, labels, batch_size=32, shuffle=True, split_ratio=0.8):
-    train_dataset = RawImageDataset(images, labels, set_type="train", split_ratio=split_ratio)
-    val_dataset = RawImageDataset(images, labels, set_type="val", split_ratio=split_ratio)
+
+    train_dataset = CoordinatesDataset(images, labels, set_type="train", shuffle=shuffle, split_ratio=split_ratio)
+    val_dataset = CoordinatesDataset(images, labels, set_type="val", shuffle=shuffle, split_ratio=split_ratio)
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=shuffle, num_workers=12)
     val_loader = DataLoader(val_dataset, batch_size=200, shuffle=shuffle)
-    return train_dataloader, val_loader
+    return train_dataloader, val_loader, train_dataset, val_dataset
 
 
+# TODO refactor code bc this is the same as Coordinates Dataset
 class RawImageDataset(Dataset):
-    def __init__(self, images, labels, set_type, split_ratio=0.8):
+    def __init__(self, images, labels, set_type, shuffle=True, split_ratio=0.8):
+        if shuffle:
+            np.random.seed(17)
+            shuffled_indices = np.random.permutation(images.shape[0])
+            images = images[shuffled_indices]
+            labels = labels[shuffled_indices]
+            self.index_order = shuffled_indices
         split_idx = int(split_ratio * images.shape[0])
         if set_type == "train":
             self.images = images[:split_idx]
