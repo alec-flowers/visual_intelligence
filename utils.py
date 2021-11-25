@@ -154,7 +154,7 @@ def save_dataframes_to_pickle(path, dataframes, filenames):
         save_pickle(dataframes[i], path, filenames[i])
 
 
-def calc_angle(lm_1, lm_2, lm_3, ref=np.array([0, 1, 0])):
+    def calc_angle(lm_1, lm_2, lm_3, ref=np.array([0,1,0])):
     """
     Calculates angle between three landmarks in reference to the y-norm vector.
     :param lm_1: Landmark 1
@@ -185,5 +185,5 @@ def calc_angle(lm_1, lm_2, lm_3, ref=np.array([0, 1, 0])):
     c = sign * np.linalg.norm(cross)
     angle = np.degrees(np.arctan2(c, np.dot(lm_2_lm_3_vector, lm_2_lm_1_vector)))
     # get angle between 0 - 360
-    corrected_angle = (angle + 360) % 360
-    return corrected_angle
+    # corrected_angle = (angle + 360) % 360
+    return angle
