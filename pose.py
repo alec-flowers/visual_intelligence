@@ -61,6 +61,10 @@ def estimate_poses(image, label, plot=False):
             # bg_image[:] = BG_COLOR
             # annotated_image = np.where(condition, annotated_image, bg_image)
             # Draw pose landmarks on the image.
+            # Set visibility of all landmarks to 1 for plotting
+            for elem in results.pose_landmarks.landmark:
+                elem.visibility = 1.0
+
             mp_drawing.draw_landmarks(
                 annotated_image,
                 results.pose_landmarks,
@@ -118,9 +122,9 @@ def pose_to_dataframe(estimated_poses, dataset, pose_var):
 if __name__ == "__main__":
     # Define parameters
     shuffle = False
-    run_from_scratch = False
+    run_from_scratch = True
     subset = False  # Take a subset of 100 images out of the 660 images?
-    save_poses = False  # Save poses after estimated?
+    save_poses = True  # Save poses after estimated?
 
     # Load the data
     dataset, dataloader = load_data(path=TRAINPATH, batch_size=None, shuffle=shuffle, subset=subset, subset_size=100)
@@ -146,11 +150,11 @@ if __name__ == "__main__":
         df_world = load_pickle(PICKLEDPATH, "pose_world_landmark_all_df.pickle")
         df_vis_world = load_pickle(PICKLEDPATH, "pose_world_landmark_vis_df.pickle")
 
-        # annotated_images = load_pickle(PICKLEDPATH, "annotated_images.pickle") # TODO doesnt work for me (Nina)
+        annotated_images = load_pickle(PICKLEDPATH, "annotated_images.pickle")
 
-        plot_dataset_images(dataset, 9)
-        # plot_annotated_images(annotated_images, 16)  # TODO doesnt work
-        plot_no_pose_photo(df, dataset, 9)
+        #plot_dataset_images(dataset, 9)
+        plot_annotated_images(annotated_images, 16)
+        #plot_no_pose_photo(df, dataset, 9)
 
         print(f"There are {sum(df['NOSE'].isna())} images we don't get a pose estimate for out \
         of {len(dataset)}. This is {sum(df['NOSE'].isna()) / len(dataset) * 100:.2f}%")
