@@ -1,8 +1,4 @@
-import pytorch_lightning as pl
-import torch
-import torchmetrics
 from torch import nn
-from torchvision import transforms
 
 
 class MLP(nn.Module):
@@ -12,14 +8,14 @@ class MLP(nn.Module):
     def __init__(self, num_classes):
         super().__init__()
         self.layers = nn.Sequential(
-          nn.Flatten(),
-          nn.Linear(33 * 3, 64),
-          nn.BatchNorm1d(num_features=64),
-          nn.ReLU(),
-          nn.Linear(64, 32),
-          nn.BatchNorm1d(num_features=32),
-          nn.ReLU(),
-          nn.Linear(32, num_classes)
+            nn.Flatten(),
+            nn.Linear(33 * 3, 64),
+            nn.BatchNorm1d(num_features=64),
+            nn.ReLU(),
+            nn.Linear(64, 32),
+            nn.BatchNorm1d(num_features=32),
+            nn.ReLU(),
+            nn.Linear(32, num_classes)
         )
 
     def forward(self, x):
@@ -34,8 +30,8 @@ class CNN(nn.Module):
     def __init__(self, num_classes):
         super().__init__()
         self.layers = nn.Sequential(
-            #transforms.ConvertImageDtype(torch.float32),
-            #transforms.Grayscale(num_output_channels=3),
+            # transforms.ConvertImageDtype(torch.float32),
+            # transforms.Grayscale(num_output_channels=3),
             nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3),
             nn.SELU(),
             nn.Conv2d(16, 32, kernel_size=5, stride=1, padding=2),
