@@ -1,8 +1,8 @@
 import datetime
-from model import CNN
-import torch
-from torch import nn
+
 import numpy as np
+import torch
+
 from utils import MODEL_PATH
 
 

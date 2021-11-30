@@ -9,7 +9,7 @@ class MLP(nn.Module):
         super().__init__()
         self.layers = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(33 * 3, 64),
+            nn.Linear(33 * 3, 64),  # Input are 33 landmarks with (x,y,z) coordinates, respectively
             nn.BatchNorm1d(num_features=64),
             nn.ReLU(),
             nn.Linear(64, 32),
