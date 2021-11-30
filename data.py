@@ -147,9 +147,9 @@ def get_not_none_annotated_images():
     return annotated_images_filtered
 
 
-def get_data(batch_size, split_ratio):
-    numpy_data_world = load_pickle(PICKLEDPATH, "pose_world_landmark_numpy.pickle")
-    labels_drop_na = load_pickle(PICKLEDPATH, "labels_drop_na.pickle")
+def get_data(batch_size, split_ratio, path=PICKLEDPATH):
+    numpy_data_world = load_pickle(path, "pose_world_landmark_numpy.pickle")
+    labels_drop_na = load_pickle(path, "labels_drop_na.pickle")
     train_coordinate_dataset = CoordinatesDataset(numpy_data_world, labels_drop_na, set_type="train",
                                                   split_ratio=split_ratio)
     val_coordinate_dataset = CoordinatesDataset(numpy_data_world, labels_drop_na, set_type="val",
