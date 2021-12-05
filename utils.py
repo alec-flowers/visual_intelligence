@@ -154,7 +154,7 @@ def save_dataframes_to_pickle(path, dataframes, filenames):
         save_pickle(dataframes[i], path, filenames[i])
 
 
-    def calc_angle(lm_1, lm_2, lm_3, ref=np.array([0,1,0])):
+def calc_angle(lm_1, lm_2, lm_3, ref=np.array([0,1,0])):
     """
     Calculates angle between three landmarks in reference to the y-norm vector.
     :param lm_1: Landmark 1
@@ -179,10 +179,10 @@ def save_dataframes_to_pickle(path, dataframes, filenames):
     lm_2_lm_3_vector = lm_3 - lm_2
     # calc angle using https://ch.mathworks.com/matlabcentral/answers/501449-angle-betwen-two-3d-vectors-in-the-range-0-360-degree
     cross = np.cross(lm_2_lm_3_vector, lm_2_lm_1_vector)
-    sign = np.sign(np.dot(cross, ref))
-    if sign == 0:
-        raise ValueError('Reference Vector, v1 and v2 are in the same plane!')
-    c = sign * np.linalg.norm(cross)
+    # sign = np.sign(np.dot(cross, ref))
+    # if sign == 0:
+    #     raise ValueError('Reference Vector, v1 and v2 are in the same plane!')
+    c = np.linalg.norm(cross) # * sign
     angle = np.degrees(np.arctan2(c, np.dot(lm_2_lm_3_vector, lm_2_lm_1_vector)))
     # get angle between 0 - 360
     # corrected_angle = (angle + 360) % 360
