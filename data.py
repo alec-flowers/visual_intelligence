@@ -8,7 +8,7 @@ from torch.utils.data import Dataset, DataLoader, Subset
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 
-from utils import load_pickle, PICKLEDPATH, TRAINPATH
+from utils import load_pickle, PICKLEDPATH, TRAINPATH, calc_limb_lengths
 
 IMG_EXTENSIONS = (".jpg", ".jpeg", ".png", ".ppm", ".bmp", ".pgm", ".tif", ".tiff", ".webp")
 
@@ -29,12 +29,16 @@ class CoordinatesDataset(Dataset):
             labels = labels[shuffled_indices]
             self.index_order = shuffled_indices
         split_idx = int(split_ratio * coordinates.shape[0])
+
         if set_type == "train":
             self.coordinates = coordinates[:split_idx]
             self.labels = labels[:split_idx]
+            self.limb_lengths = [calc_limb_lengths(coords) for coords in self.coordinates]
+
         elif set_type == "val":
             self.coordinates = coordinates[split_idx:]
             self.labels = labels[split_idx:]
+            self.limb_lengths = [calc_limb_lengths(coords) for coords in self.coordinates]
 
     def __len__(self):
         return self.labels.shape[0]
@@ -43,8 +47,9 @@ class CoordinatesDataset(Dataset):
         assert 0 <= idx < len(self)
         coordinates = self.coordinates[idx]
         label = self.labels[idx]
+        limb_lengths = self.limb_lengths[idx]
 
-        return coordinates, label
+        return coordinates, label, limb_lengths
 
 
 class ClassifyDataset(ImageFolder):

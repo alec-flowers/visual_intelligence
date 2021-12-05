@@ -11,12 +11,29 @@ adversarial_loss = nn.BCELoss()
 TRAIN_ON_GPU = False
 
 
-def save_models(generator, discriminator, G_optimizer, D_optimizer, epoch):
+def save_models(generator, discriminator, G_optimizer, D_optimizer, epoch, path):
     """ Save models at specific point in time. """
-    torch.save(generator.state_dict(), "./saved_model/cGAN" + f'/generator_{epoch}.pth')
-    torch.save(discriminator.state_dict(), "./saved_model/cGAN" + f'/discriminator_{epoch}.pth')
-    torch.save(G_optimizer.state_dict(), "./saved_model/cGAN" + f'/G_optimizer_{epoch}.pth')
-    torch.save(D_optimizer.state_dict(), "./saved_model/cGAN" + f'/D_optimizer_{epoch}.pth')
+    torch.save({
+        'generator': generator.state_dict(),
+        'discriminator': discriminator.state_dict(),
+        'G_optimizer': G_optimizer.state_dict(),
+        'D_optimizer': D_optimizer.state_dict(),
+    }, path + f'/model_after_epoch_{epoch}.pth')
+
+
+def load_model(generator, discriminator, G_optimizer, D_optimizer, version, path):
+    checkpoint = torch.load(path + f'/model_after_epoch_{version}.pth')
+    generator.load_state_dict(checkpoint['generator'])
+    discriminator.load_state_dict(checkpoint['discriminator'])
+    G_optimizer.load_state_dict(checkpoint['G_optimizer'])
+    D_optimizer.load_state_dict(checkpoint['D_optimizer'])
+    return generator, discriminator, G_optimizer, D_optimizer
+
+
+def load_generator(generator, version, path):
+    checkpoint = torch.load(path + f'/model_after_epoch_{version}.pth')
+    generator.load_state_dict(checkpoint['generator'])
+    return generator
 
 
 def print_training_progress(epoch, generator_loss, discriminator_loss):
@@ -55,18 +72,10 @@ def generate_noise(number_of_images=1, noise_dimension=100, device=None):
     return torch.randn(number_of_images, noise_dimension, device=device)
 
 
-def load_model(generator, discriminator, G_optimizer, D_optimizer, version):
-    generator.load_state_dict(torch.load("./saved_model/cGAN" + f'/generator_{version}.pth'))
-    discriminator.load_state_dict(torch.load("./saved_model/cGAN" + f'/discriminator_{version}.pth'))
-    G_optimizer.load_state_dict(torch.load("./saved_model/cGAN" + f'/G_optimizer_{version}.pth'))
-    D_optimizer.load_state_dict(torch.load("./saved_model/cGAN" + f'/D_optimizer_{version}.pth'))
-    return generator, discriminator, G_optimizer, D_optimizer
-
-
 if __name__ == "__main__":
     # Model parameters
     batch_size = 64
-    NUM_EPOCHS = 1000
+    NUM_EPOCHS = 1500
     learning_rate = 0.0002
     shuffle = True
     split_ratio = 1
@@ -76,13 +85,14 @@ if __name__ == "__main__":
 
     train_from_scratch = False
     continue_training = True
-    version = 572
+    version = 936
     device = get_device()
 
     num_examples_to_generate = 10
     LATENT_DIM = 100
     N_CLASSES = 3
     start = None
+    c_GAN_path = "./saved_model/cGAN"
 
     # Set fixed random number seed
     torch.manual_seed(42)
@@ -100,7 +110,7 @@ if __name__ == "__main__":
     elif continue_training:
         start = version
         generator, discriminator, G_optimizer, D_optimizer = \
-            load_model(generator, discriminator, G_optimizer, D_optimizer, version)
+            load_model(generator, discriminator, G_optimizer, D_optimizer, version, c_GAN_path)
 
     for epoch in range(start, NUM_EPOCHS + 1):
 
@@ -117,7 +127,6 @@ if __name__ == "__main__":
             fake_target = Variable(torch.zeros(real_images.size(0), 1).to(device))
 
             D_real_loss = discriminator_loss(discriminator((real_images, labels)), real_target)
-            # D_real_loss.backward()
 
             noise_vector = generate_noise(real_images.size(0), LATENT_DIM, device=device)
 
@@ -125,9 +134,6 @@ if __name__ == "__main__":
 
             output = discriminator((generated_image.detach(), labels))
             D_fake_loss = discriminator_loss(output, fake_target)
-
-            # train with fake
-            # D_fake_loss.backward()
 
             D_total_loss = (D_real_loss + D_fake_loss) / 2
             D_loss_list.append(D_total_loss)

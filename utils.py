@@ -20,6 +20,8 @@ assert (PLOT_PATH.exists())
 GOOD_POSES_PATH = (DATAPATH / "good_poses").absolute().resolve()
 assert (GOOD_POSES_PATH.exists())
 
+NOISE_DIMENSION = 33*3
+
 BODY_POSE_CONNECTIONS = [(11, 12), (11, 13),
                          (13, 15), (15, 17), (15, 19), (15, 21), (17, 19),
                          (12, 14), (14, 16), (16, 18), (16, 20), (16, 22),
