@@ -17,16 +17,15 @@ MODEL_PATH = (REPO_ROOT / "saved_model/").absolute().resolve()
 assert (MODEL_PATH.exists())
 PLOT_PATH = (REPO_ROOT / "plots").absolute().resolve()
 assert (PLOT_PATH.exists())
-
 GOOD_POSES_PATH = (DATAPATH / "good_poses").absolute().resolve()
 assert (GOOD_POSES_PATH.exists())
 
 BODY_POSE_CONNECTIONS = [(11, 12), (11, 13),
-                          (13, 15), (15, 17), (15, 19), (15, 21), (17, 19),
-                          (12, 14), (14, 16), (16, 18), (16, 20), (16, 22),
-                          (18, 20), (11, 23), (12, 24), (23, 24), (23, 25),
-                          (24, 26), (25, 27), (26, 28), (27, 29), (28, 30),
-                          (29, 31), (30, 32), (27, 31), (28, 32)]
+                         (13, 15), (15, 17), (15, 19), (15, 21), (17, 19),
+                         (12, 14), (14, 16), (16, 18), (16, 20), (16, 22),
+                         (18, 20), (11, 23), (12, 24), (23, 24), (23, 25),
+                         (24, 26), (25, 27), (26, 28), (27, 29), (28, 30),
+                         (29, 31), (30, 32), (27, 31), (28, 32)]
 
 POSEDATAFRAME_LIST = ["pose_landmark_all_df.pickle", "pose_landmark_vis_df.pickle",
                       "pose_landmark_numpy.pickle", "pose_world_landmark_all_df.pickle",
@@ -123,3 +122,18 @@ def calc_angle(lm_1, lm_2, lm_3, ref=np.array([0, 1, 0])):
     # get angle between 0 - 360
     corrected_angle = (angle + 360) % 360
     return corrected_angle
+
+
+def euclidian_distance(x1, x2):
+    return np.linalg.norm(x1 - x2)
+
+
+def calc_limb_lengths(pose: np.ndarray):
+    """
+    Calculates the limb lengths of the Body Pose Connections.
+    """
+    assert pose.shape == (33, 3)
+    limb_lengths = []
+    for connection in BODY_POSE_CONNECTIONS:
+        limb_lengths.append(euclidian_distance(pose[connection[0], :], pose[connection[1], :]))
+    return np.array(limb_lengths)
