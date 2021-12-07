@@ -31,6 +31,8 @@ def load_model(generator, discriminator, G_optimizer, D_optimizer, version, path
 
 
 def load_generator(generator, version, path):
+    if version == 52:
+        version = "052"
     checkpoint = torch.load(path + f'/model_after_epoch_{version}.pth')
     generator.load_state_dict(checkpoint['generator'])
     return generator
@@ -83,8 +85,8 @@ if __name__ == "__main__":
     TRAIN_ON_GPU = False
     PRINT_STATS_AFTER_BATCH = 39
 
-    train_from_scratch = False
-    continue_training = True
+    train_from_scratch = True
+    continue_training = False
     version = 936
     device = get_device()
 
@@ -117,7 +119,7 @@ if __name__ == "__main__":
         D_loss_list, G_loss_list = [], []
         G_loss, D_total_loss = None, None
 
-        for index, (real_images, labels) in enumerate(train_loader):
+        for index, (real_images, labels, _) in enumerate(train_loader):
             D_optimizer.zero_grad()
             real_images = real_images.to(device).float()
             labels = labels.to(device)

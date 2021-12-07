@@ -40,8 +40,7 @@ def plot_generated_images(generator, labels, device=get_device()):
         # Plot
         #plt.subplot(3, 3, i+1)
         plot_3d_keypoints(image[:, 0], image[:, 1], image[:, 2])
-        # plt.axis('off')
-        #plt.savefig(f'./plots/test_{i}.jpg')
+
 
 
 if __name__ == "__main__":

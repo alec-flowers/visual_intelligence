@@ -4,77 +4,99 @@ from matplotlib import pyplot as plt
 
 from cGAN import get_device, generate_noise, load_generator
 from model import LimbLengthGenerator
-from utils import BODY_POSE_CONNECTIONS, GOOD_POSES_PATH, NOISE_DIMENSION
+from utils import BODY_POSE_CONNECTIONS, GOOD_POSES_PATH, NOISE_DIMENSION, calc_limb_lengths, PLOT_PATH
 from data import get_data
 
 
-def plot_3d_keypoints(x, y, z):
+def plot_3d_keypoints(x, y, z, title=""):
     # fig = plt.figure()
     ax = plt.axes(projection="3d")
     ax.view_init(-70, -95)
     ax.scatter3D(x, y, z)
     for i, j in BODY_POSE_CONNECTIONS:
         ax.plot([x[i], x[j]], [y[i], y[j]], [z[i], z[j]], color='b')
+    plt.title(title)
     plt.show()
 
 
-def generate_images(generator, labels, device):
-    noise_vector = generate_noise(len(labels), 100, device=device)
-    generator.eval()
-    images = generator((noise_vector, labels))
-
-    return images
-
-
-def plot_generated_images(generator, labels, device=get_device()):
+def plot_coordinates(coords, labels, version=None):
     """ Generate subplots with generated examples. """
-    images = generate_images(generator, labels, device)
-    plt.figure(figsize=(10, 10))
+    fig = plt.figure()
     for i in range(len(labels)):
         # Get image
-        image = images[i]
-        # Convert image back onto CPU and reshape
-        image = image.cpu().detach().numpy()
-        image = np.reshape(image, (33, 3))
+        coord = coords[i]
         # Plot
-        #plt.subplot(3, 3, i+1)
-        plot_3d_keypoints(image[:, 0], image[:, 1], image[:, 2])
-        # plt.axis('off')
-        #plt.savefig(f'./plots/test_{i}.jpg')
+        if version:
+            plot_3d_keypoints(coord[:, 0], coord[:, 1], coord[:, 2],
+                              title=f"Image {i} with label {labels[i].item()}, generator version {version}")
+            fig.figure.savefig(str(PLOT_PATH) + f"/img_{i}_generator_vs_{version}.png")
+        else:
+            plot_3d_keypoints(coord[:, 0], coord[:, 1], coord[:, 2],
+                              title=f"Original pose estimate {i} with label {labels[i].item()}")
+            fig.figure.savefig(str(PLOT_PATH) + f"/original_img_{i}_label_{labels[i].item()}.png")
 
 
-def plot_coordinates(original_coords, generated_coords, labels):
-    """ Generate subplots with generated examples. """
-    plt.figure(figsize=(10, 10))
-    for i in range(len(labels)):
-        # Get image
-        original_coord = original_coords[i]
-        generated_coord = generated_coords[i]
-        # Plot
-        #plt.subplot(3, 3, i+1)
-        plot_3d_keypoints(original_coord[:, 0], original_coord[:, 1], original_coord[:, 2])
-        plot_3d_keypoints(generated_coord[:, 0], generated_coord[:, 1], generated_coord[:, 2])
+def differences_in_limb_lengths(generated_limb_lengths ,train_coordinate_dataset, start, stop):
+    # Compare limb lengths
+    differences = np.mean([np.linalg.norm(generated_limb_length - original_limb_length)
+                           for (generated_limb_length, original_limb_length)
+                           in zip(generated_limb_lengths, train_coordinate_dataset.limb_lengths[start:stop])])
+
+    return differences
+
+
+def generate_coords_given_limb_lengths(train_coordinate_dataset, start, stop, version, plot=False):
+    generator = LimbLengthGenerator().to(device)
+    generator = load_generator(generator, version, "./saved_model/cLimbGAN")
+
+    noise_vector = generate_noise(stop-start, NOISE_DIMENSION, device=device)
+    labels = torch.tensor(train_coordinate_dataset.labels[start:stop]).unsqueeze(1).long()  # 0, 1, 2
+
+    generated_coords = generator((noise_vector, labels,
+                                  torch.tensor(np.array(train_coordinate_dataset.limb_lengths[start:stop]))))
+    generated_limb_lengths = [calc_limb_lengths(coords) for coords in generated_coords.detach().numpy()]
+
+    if plot:
+        # Plot generated image given the original limb lengths
+        plot_coordinates(generated_coords.detach().numpy(), labels, version)
+
+    return generated_limb_lengths
+
+
+def plot_limb_length_convergence(mean_differences):
+    plt.plot(*zip(*mean_differences))
+    plt.title("Mean squared average deviation of generated from target limb lengths")
+    plt.xlabel("Training epoch")
+    plt.ylabel("Mean squared average deviation")
+    plt.ylim(0, 2)
+    plt.show()
 
 
 if __name__ == "__main__":
     learning_rate = 0.0002
-    version = 468
-    N = 6
+    VERSION = 520
+    START = 19
+    STOP = 21
     device = get_device()
-    generator = LimbLengthGenerator().to(device)
-    generator = load_generator(generator, version, "./saved_model/cLimbGAN")
+
     train_loader, _, train_coordinate_dataset, _ = get_data(batch_size=64, split_ratio=0.15, path=GOOD_POSES_PATH)
+    # d = generate_coords_given_limb_lengths(train_coordinate_dataset, START, STOP, VERSION, plot=False)
 
-    noise_vector = generate_noise(N, NOISE_DIMENSION, device=device)
-    labels = torch.tensor(train_coordinate_dataset.labels[:N]).unsqueeze(1).long()  # 0, 1, 2
+    # Plot original image
+    plot_coordinates(train_coordinate_dataset.coordinates[START:STOP], train_coordinate_dataset.labels[START:STOP], None)
 
-    generated_coords = generator((noise_vector, labels, torch.tensor(train_coordinate_dataset.limb_lengths[:N])))
+    # Plot generated images conditioned on label and limb length
+    for version in range(52, VERSION+1, 52):
+        generate_coords_given_limb_lengths(train_coordinate_dataset, START, STOP, version, plot=True)
 
-    plot_coordinates(train_coordinate_dataset.coordinates[:N], generated_coords.detach().numpy(), labels)
-    plot_coordinates(train_coordinate_dataset.coordinates[:N], generated_coords.detach().numpy(), labels)
+    # Check if the mean differences from generated to input image decrease over time
+    mean_differences = []
+    for version in range(52, VERSION+1, 52):
+        generated_limb_lengths = generate_coords_given_limb_lengths(train_coordinate_dataset, START, STOP, version, plot=False)
+        differences = differences_in_limb_lengths(generated_limb_lengths, train_coordinate_dataset, START, STOP)
+        mean_differences.append((version, differences))
 
-    # plot_generated_images(generator, labels=labels, device=get_device())
-
+    plot_limb_length_convergence(mean_differences)
 
 
 
