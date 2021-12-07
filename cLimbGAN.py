@@ -21,12 +21,12 @@ if __name__ == "__main__":
     shuffle = True
     split_ratio = 1
     save_generated_images = False
-    TRAIN_ON_GPU = False
+    TRAIN_ON_GPU = True
     PRINT_STATS_AFTER_BATCH = 39
 
     train_from_scratch = False
     continue_training = True
-    version = 312
+    version = 520
     device = get_device()
 
     num_examples_to_generate = 10
