@@ -74,23 +74,29 @@ def estimate_poses(image, label, plot=False):
     return results, annotated_image
 
 
+def pose_landmarks_to_list(solution, pose_var):
+    val = []
+    visib = []
+    nump = []
+    for land in getattr(solution, pose_var).landmark:
+        x = land.x
+        y = land.y
+        z = land.z
+        vis = land.visibility
+        val.append([x, y, z, vis])
+        nump.append([x, y, z])
+        visib.append(vis)
+
+    return val, visib, nump
+
+
 def pose_to_dataframe(estimated_poses, dataset, pose_var):
     all_val = []
     visib_val = []
     for_numpy = []
     for i in range(len(estimated_poses)):
         if estimated_poses[i]:
-            val = []
-            visib = []
-            nump = []
-            for land in getattr(estimated_poses[i], pose_var).landmark:
-                x = land.x
-                y = land.y
-                z = land.z
-                vis = land.visibility
-                val.append([x, y, z, vis])
-                nump.append([x, y, z])
-                visib.append(vis)
+            val, visib, nump = pose_landmarks_to_list(estimated_poses[i], pose_var)
             all_val.append(val)
             visib_val.append(visib)
             for_numpy.append(nump)

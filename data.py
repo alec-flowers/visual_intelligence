@@ -111,6 +111,10 @@ class GoodBadDataset(ImageFolder):
 
         return classes, class_to_idx
 
+TRANSFORM = (transforms.Compose([# transforms.Grayscale(num_output_channels=3),
+                                         transforms.ToTensor(),
+                                         transforms.ConvertImageDtype(torch.uint8)]))
+
 
 def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=True, batch_sampler=None, subset=False,
               classify=True, subset_size=100) -> Tuple[ClassifyDataset, DataLoader]:
