@@ -8,7 +8,7 @@ from torch.utils.data import Dataset, DataLoader, Subset
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 
-from utils import load_pickle, PICKLEDPATH, TRAINPATH
+from utils import load_pickle, PICKLEDPATH, TRAINPATH, calc_angle, LANDMARKS_ANGLES_DICT, DATAPATH
 
 IMG_EXTENSIONS = (".jpg", ".jpeg", ".png", ".ppm", ".bmp", ".pgm", ".tif", ".tiff", ".webp")
 
@@ -92,9 +92,10 @@ class ClassifyDataset(ImageFolder):
 
         return classes, class_to_idx
 
+#
+# def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=False, batch_sampler=None, subset=False,
+#               subset_size=100) -> Tuple[ClassifyDataset, DataLoader]:
 
-def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=False, batch_sampler=None, subset=False,
-              subset_size=100) -> Tuple[ClassifyDataset, DataLoader]:
 class GoodBadDataset(ImageFolder):
     def __init__(
             self,
@@ -208,3 +209,17 @@ def get_data(batch_size, split_ratio):
     val_loader = DataLoader(val_coordinate_dataset, batch_size=batch_size, num_workers=12)
 
     return train_loader, val_loader, train_coordinate_dataset, val_coordinate_dataset
+
+
+def create_angle_features(df):
+    for angle_name, lms in LANDMARKS_ANGLES_DICT.items():
+        df[angle_name] = df.apply(lambda x: calc_angle(x[lms[0]], x[lms[1]], x[lms[2]]), axis=1)
+
+
+if __name__ == '__main__':
+    df_world = load_pickle(DATAPATH, "pose_world_landmark_all_df.pickle")
+    df_world = df_world.dropna(axis=0, how='any')
+    for angle_name, lms in LANDMARKS_ANGLES_DICT.items():
+        df_world[angle_name] = df_world.apply(lambda x: calc_angle(x[lms[0]], x[lms[1]], x[lms[2]]), axis=1)
+    print("YOLO")
+
