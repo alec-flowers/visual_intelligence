@@ -1,13 +1,14 @@
-import torch
-from torchvision import datasets, transforms
-from torchvision.datasets import ImageFolder, DatasetFolder
-from torch.utils.data import Dataset, DataLoader, Subset
-from utils import *
-from PIL import Image
-from collections import OrderedDict
-import numpy as np
-
+import os
 from typing import Any, Callable, Optional, Tuple, List, Dict, Sequence
+
+import numpy as np
+import torch
+from PIL import Image
+from torch.utils.data import Dataset, DataLoader, Subset
+from torchvision import transforms
+from torchvision.datasets import ImageFolder
+
+from utils import load_pickle, PICKLEDPATH, TRAINPATH
 
 IMG_EXTENSIONS = (".jpg", ".jpeg", ".png", ".ppm", ".bmp", ".pgm", ".tif", ".tiff", ".webp")
 
@@ -36,7 +37,13 @@ class SubsetWithAttributes(Dataset):
 
 
 class CoordinatesDataset(Dataset):
-    def __init__(self, coordinates, labels, set_type, split_ratio=0.8):
+    def __init__(self, coordinates, labels, set_type, shuffle=True, split_ratio=0.8):
+        if shuffle:
+            np.random.seed(42)
+            shuffled_indices = np.random.permutation(coordinates.shape[0])
+            coordinates = coordinates[shuffled_indices]
+            labels = labels[shuffled_indices]
+            self.index_order = shuffled_indices
         split_idx = int(split_ratio * coordinates.shape[0])
         if set_type == "train":
             self.coordinates = coordinates[:split_idx]
@@ -64,7 +71,6 @@ class ClassifyDataset(ImageFolder):
             transform: Optional[Callable] = None,
             is_valid_file: Optional[Callable[[str], bool]] = None
     ):
-
         super(ImageFolder, self).__init__(
             root,
             loader,
@@ -76,7 +82,8 @@ class ClassifyDataset(ImageFolder):
         self.classes = list({cls.split("_")[-1]: True for cls in classes}.keys())
 
     def find_classes(self, directory: str) -> Tuple[List[str], Dict[str, int]]:
-        classes = sorted(entry.name for entry in os.scandir(directory) if entry.is_dir() and not entry.name.startswith("2_"))
+        classes = sorted(
+            entry.name for entry in os.scandir(directory) if entry.is_dir() and not entry.name.startswith("2_"))
         if not classes:
             raise FileNotFoundError(f"Couldn't find any class folder in {directory}.")
 
@@ -86,6 +93,8 @@ class ClassifyDataset(ImageFolder):
         return classes, class_to_idx
 
 
+def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=False, batch_sampler=None, subset=False,
+              subset_size=100) -> Tuple[ClassifyDataset, DataLoader]:
 class GoodBadDataset(ImageFolder):
     def __init__(
             self,
@@ -121,22 +130,19 @@ def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=True, batch_s
     if resize:
         resize_size = 300
         transform = (transforms.Compose([transforms.Resize(resize_size),
-                                         transforms.CenterCrop(resize_size-1),
-                                         #transforms.Grayscale(num_output_channels=3),
+                                         transforms.CenterCrop(resize_size - 1),
+                                         transforms.Grayscale(num_output_channels=3),
                                          transforms.ToTensor(),
-                                         transforms.ConvertImageDtype(torch.uint8)]))
+                                         transforms.ConvertImageDtype(torch.float32)]))
     else:
-        transform = (transforms.Compose([# transforms.Grayscale(num_output_channels=3),
-                                         transforms.ToTensor(),
-                                         transforms.ConvertImageDtype(torch.uint8)]))
+        transform = (transforms.Compose([  # transforms.Grayscale(num_output_channels=3),
+            transforms.ToTensor(),
+            transforms.ConvertImageDtype(torch.uint8)]))
+    dataset = ClassifyDataset(path, transform=transform)
     if classify:
         dataset = ClassifyDataset(path, transform=transform)
     else:
         dataset = GoodBadDataset(path, transform=transform)
-
-    if subset:
-        indices = torch.arange(subset_size)
-        dataset = SubsetWithAttributes(dataset, indices)
 
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, batch_sampler=batch_sampler)
 
@@ -144,15 +150,23 @@ def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=True, batch_s
 
 
 def train_val_split(images, labels, batch_size=32, shuffle=True, split_ratio=0.8):
-    train_dataset = RawImageDataset(images, labels, set_type="train", split_ratio=split_ratio)
-    val_dataset = RawImageDataset(images, labels, set_type="val", split_ratio=split_ratio)
+
+    train_dataset = CoordinatesDataset(images, labels, set_type="train", shuffle=shuffle, split_ratio=split_ratio)
+    val_dataset = CoordinatesDataset(images, labels, set_type="val", shuffle=shuffle, split_ratio=split_ratio)
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=shuffle, num_workers=12)
-    val_loader = DataLoader(val_dataset, batch_size=None, shuffle=shuffle)
-    return train_dataloader, val_loader
+    val_loader = DataLoader(val_dataset, batch_size=200, shuffle=shuffle)
+    return train_dataloader, val_loader, train_dataset, val_dataset
 
 
+# TODO refactor code bc this is the same as Coordinates Dataset
 class RawImageDataset(Dataset):
-    def __init__(self, images, labels, set_type, split_ratio=0.8):
+    def __init__(self, images, labels, set_type, shuffle=True, split_ratio=0.8):
+        if shuffle:
+            np.random.seed(17)
+            shuffled_indices = np.random.permutation(images.shape[0])
+            images = images[shuffled_indices]
+            labels = labels[shuffled_indices]
+            self.index_order = shuffled_indices
         split_idx = int(split_ratio * images.shape[0])
         if set_type == "train":
             self.images = images[:split_idx]
@@ -172,14 +186,25 @@ class RawImageDataset(Dataset):
         return images, label
 
 
-def create_angle_features(df):
-    for angle_name, lms in LANDMARKS_ANGLES_DICT.items():
-        df[angle_name] = df.apply(lambda x: calc_angle(x[lms[0]], x[lms[1]], x[lms[2]]), axis=1)
+def get_not_none_annotated_images():
+    annotated_images = load_pickle(PICKLEDPATH, "annotated_images.pickle")
+    annotated_images_filtered = []
+    for image in annotated_images:
+        if image is not None:
+            annotated_images_filtered.append(image)
+    return annotated_images_filtered
 
 
-if __name__ == '__main__':
-    df_world = load_pickle(DATAPATH, "pose_world_landmark_all_df.pickle")
-    df_world = df_world.dropna(axis=0, how='any')
-    for angle_name, lms in LANDMARKS_ANGLES_DICT.items():
-        df_world[angle_name] = df_world.apply(lambda x: calc_angle(x[lms[0]], x[lms[1]], x[lms[2]]), axis=1)
-    print("YOLO")
+def get_data(batch_size, split_ratio):
+    numpy_data_world = load_pickle(PICKLEDPATH, "pose_world_landmark_numpy.pickle")
+    labels_drop_na = load_pickle(PICKLEDPATH, "labels_drop_na.pickle")
+    train_coordinate_dataset = CoordinatesDataset(numpy_data_world, labels_drop_na, set_type="train",
+                                                  split_ratio=split_ratio)
+    val_coordinate_dataset = CoordinatesDataset(numpy_data_world, labels_drop_na, set_type="val",
+                                                split_ratio=split_ratio)
+
+    # Create train and validation set
+    train_loader = DataLoader(train_coordinate_dataset, batch_size=batch_size, shuffle=True, num_workers=12)
+    val_loader = DataLoader(val_coordinate_dataset, batch_size=batch_size, num_workers=12)
+
+    return train_loader, val_loader, train_coordinate_dataset, val_coordinate_dataset

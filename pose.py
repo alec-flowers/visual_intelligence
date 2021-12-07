@@ -24,53 +24,51 @@ mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
 
 
-def poses_for_dataset(dataloader):
+def poses_for_dataset(dataloader, skip_image_annotation):
     assert dataloader.batch_size is None
     result_list = []
     annotated_images = []
     for image, label in tqdm(dataloader):
-        results, annotated = estimate_poses(image, label)
+        results, annotated = estimate_poses(image, label, skip_image_annotation)
         result_list.append(results)
         annotated_images.append(annotated)
     return result_list, annotated_images
 
 
-def estimate_poses(image, label, plot=False):
+def estimate_poses(image, label, skip_image_annotation, plot=False):
     with mp_pose.Pose(
             static_image_mode=True,
-            model_complexity=1,
+            model_complexity=2,
             enable_segmentation=True,
             min_detection_confidence=0.0) as pose:
-        # for i in range(images.shape[0]):
-            image = image.numpy().transpose((1, 2, 0))
-            image_height, image_width, _ = image.shape
-            # Convert the BGR image to RGB before processing.
-            results = pose.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+        image = image.numpy().transpose((1, 2, 0))
+        image_height, image_width, _ = image.shape
+        # Convert the BGR image to RGB before processing.
+        results = pose.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
-            if not results.pose_landmarks:
-                if plot:
-                    plot_image(image, label.item(), "Landmark not available")
-                return None, None
-
-            annotated_image = image.copy()
-            # Draw segmentation on the image.
-            # To improve segmentation around boundaries, consider applying a joint
-            # bilateral filter to "results.segmentation_mask" with "image".
-            # condition = np.stack((results.segmentation_mask,) * 3, axis=-1) > 0.1
-            # bg_image = np.zeros(image.shape, dtype=np.uint8)
-            # bg_image[:] = BG_COLOR
-            # annotated_image = np.where(condition, annotated_image, bg_image)
-            # Draw pose landmarks on the image.
-            mp_drawing.draw_landmarks(
-                annotated_image,
-                results.pose_landmarks,
-                mp_pose.POSE_CONNECTIONS,
-                landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
-            # Plot pose world landmarks.
+        if not results.pose_landmarks:
             if plot:
-                plot_image(annotated_image)
-            # mp_drawing.plot_landmarks(
-            #    results.pose_world_landmarks, mp_pose.POSE_CONNECTIONS)
+                plot_image(image, label.item(), "Landmark not available")
+            return None, None
+
+        if skip_image_annotation:
+            return results, None
+
+        annotated_image = image.copy()
+        # Draw pose landmarks on the image.
+        # Set visibility of all landmarks to 1 for plotting
+        for elem in results.pose_landmarks.landmark:
+            elem.visibility = 1.0
+
+        mp_drawing.draw_landmarks(
+            annotated_image,
+            results.pose_landmarks,
+            mp_pose.POSE_CONNECTIONS,
+            landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
+        # Plot pose world landmarks.
+        if plot:
+            plot_image(annotated_image)
+
     return results, annotated_image
 
 
@@ -132,18 +130,18 @@ def pose_to_dataframe(estimated_poses, dataset, pose_var):
 if __name__ == "__main__":
     # Define parameters
     shuffle = False
-    run_from_scratch = True
+    run_from_scratch = False
     subset = False  # Take a subset of 100 images out of the 660 images?
     save_poses = True  # Save poses after estimated?
-    classify=False
 
     # Load the data
-    dataset, dataloader = load_data(path=TRAINPATH, batch_size=None, shuffle=shuffle, subset=subset, subset_size=100, classify=classify)
+    dataset, dataloader = load_data(path=TRAINPATH, batch_size=None, shuffle=shuffle, subset=subset, subset_size=100)
 
     if run_from_scratch:
         # Do the pose estimation
-        estimated_poses, annotated_images = poses_for_dataset(dataloader)
+        estimated_poses, annotated_images = poses_for_dataset(dataloader, skip_image_annotation=True)
         # plot_annotated_images(annotated_images, 9)
+
         # NOTE NUMPY DATA TAKES OUT NULLS, will have to take out nulls in labels
         df, df_vis, numpy_data, labels_drop_na = pose_to_dataframe(estimated_poses, dataset, pose_var='pose_landmarks')
         df_world, df_vis_world, numpy_data_world, _ = pose_to_dataframe(estimated_poses, dataset,
@@ -161,15 +159,15 @@ if __name__ == "__main__":
         df_world = load_pickle(PICKLEDPATH, "pose_world_landmark_all_df.pickle")
         df_vis_world = load_pickle(PICKLEDPATH, "pose_world_landmark_vis_df.pickle")
 
-        # annotated_images = load_pickle(PICKLEDPATH, "annotated_images.pickle") # TODO doesnt work for me (Nina)
+        annotated_images = load_pickle(PICKLEDPATH, "annotated_images.pickle")
 
-        plot_dataset_images(dataset, 9)
-        # plot_annotated_images(annotated_images, 16)  # TODO doesnt work
-        plot_no_pose_photo(df, dataset, 9)
+        # plot_dataset_images(dataset, 9)
+        # plot_annotated_images(annotated_images, 16)
+        # plot_no_pose_photo(df, dataset, 9)
 
         print(f"There are {sum(df['NOSE'].isna())} images we don't get a pose estimate for out \
         of {len(dataset)}. This is {sum(df['NOSE'].isna()) / len(dataset) * 100:.2f}%")
 
         df_vis = df_vis.dropna(axis=0, how='any')
-        df_vis.describe()
+        print(df_vis.describe())
         df_vis.mean().sort_values(ascending=False)
