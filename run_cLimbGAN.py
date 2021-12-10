@@ -3,9 +3,9 @@ import torch
 from matplotlib import pyplot as plt
 
 from cGAN import get_device, generate_noise, load_generator
+from data import get_data
 from model import LimbLengthGenerator
 from utils import BODY_POSE_CONNECTIONS, GOOD_POSES_PATH, NOISE_DIMENSION, calc_limb_lengths, PLOT_PATH
-from data import get_data
 
 
 def plot_3d_keypoints(x, y, z, title=""):
@@ -87,12 +87,12 @@ if __name__ == "__main__":
     plot_coordinates(train_coordinate_dataset.coordinates[START:STOP], train_coordinate_dataset.labels[START:STOP], None)
 
     # Plot generated images conditioned on label and limb length
-    for version in range(52, VERSION+13, 52):
+    for version in range(52, VERSION+1, 52):
         generate_coords_given_limb_lengths(train_coordinate_dataset, START, STOP, version, plot=True)
 
     # Check if the mean differences from generated to input image decrease over time
     mean_differences = []
-    for version in range(52, VERSION+13, 52):
+    for version in range(52, VERSION+1, 52):
         generated_limb_lengths = generate_coords_given_limb_lengths(train_coordinate_dataset, START, STOP, version, plot=False)
         differences = differences_in_limb_lengths(generated_limb_lengths, train_coordinate_dataset, START, STOP)
         mean_differences.append((version, differences))

@@ -1,7 +1,7 @@
-import numpy as np
-from PIL import Image
 import glob
 
+import numpy as np
+from PIL import Image
 from matplotlib import pyplot as plt
 
 from utils import PLOT_PATH
@@ -43,5 +43,3 @@ if __name__ == "__main__":
         plt.imshow(img)
     plt.tight_layout()
     plt.show()
-    w = 10
-    h = 10

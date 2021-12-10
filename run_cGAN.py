@@ -1,11 +1,9 @@
 import numpy as np
 import torch
-import torch.optim as optim
 from matplotlib import pyplot as plt
 
 from cGAN import get_device, generate_noise, load_generator
-from model import Generator, Discriminator
-from plot import plot_image_grid
+from model import Generator
 from utils import BODY_POSE_CONNECTIONS
 
 
@@ -40,7 +38,6 @@ def plot_generated_images(generator, labels, device=get_device()):
         # Plot
         #plt.subplot(3, 3, i+1)
         plot_3d_keypoints(image[:, 0], image[:, 1], image[:, 2])
-
 
 
 if __name__ == "__main__":

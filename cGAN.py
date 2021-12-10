@@ -31,8 +31,6 @@ def load_model(generator, discriminator, G_optimizer, D_optimizer, version, path
 
 
 def load_generator(generator, version, path):
-    if version == 52:
-        version = "052"
     checkpoint = torch.load(path + f'/model_after_epoch_{version}.pth')
     generator.load_state_dict(checkpoint['generator'])
     return generator
