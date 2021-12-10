@@ -36,12 +36,12 @@ def main(args):
     scrape_images(search_path=args.p, out_path=args.t, max_n_downloads=args.n, keyword=args.k, duplicate=duplicate)
 
 
-def scroll_to_end(driver, sleep_between_interactions=5):
+def scroll_to_end(driver, sleep_between_interactions: int = 5):
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
     time.sleep(sleep_between_interactions)
 
 
-def download_image(url, folder_name, num, keyword, duplicate):
+def download_image(url: str, folder_name: str, num: int, keyword: str, duplicate: list):
     """
     Download the scraped image given an url, the folder and the image number
     :param url: url of the image
@@ -50,6 +50,10 @@ def download_image(url, folder_name, num, keyword, duplicate):
     :type folder_name: str
     :param num: image number
     :type num: int
+    :param keyword:
+    :type keyword: str
+    :param duplicate:
+    :type duplicate: list
     """
     # Write image to file
     reponse = requests.get(url)
@@ -59,7 +63,7 @@ def download_image(url, folder_name, num, keyword, duplicate):
         duplicate[url] = keyword + "_" + str(num) + ".jpg"
 
 
-def scrape_images(search_path, out_path, max_n_downloads, keyword, duplicate):
+def scrape_images(search_path: str, out_path: str, max_n_downloads: int, keyword: str, duplicate: list):
     """
     Function that scrapes images from Google (using Chrome browser).
     You have to specify the search path (enter query in google, navigate to images, copy-paste the url).
@@ -76,6 +80,10 @@ def scrape_images(search_path, out_path, max_n_downloads, keyword, duplicate):
     :type dir_name: str
     :param max_n_downloads: maximum number of images we want to scrape
     :type max_n_downloads: int
+    :param keyword:
+    :type keyword: str
+    :param duplicate:
+    :type duplicate: list
     """
     # Create directory for images
     folder_name = out_path
@@ -90,8 +98,6 @@ def scrape_images(search_path, out_path, max_n_downloads, keyword, duplicate):
     page_html = driver.page_source
     page_soup = bs4.BeautifulSoup(page_html, 'html.parser')
     containers = page_soup.findAll('div', {'class': "isv-r PNCib MSM1fd BUooTd"})
-
-    len_containers = len(containers)
 
     for i in range(1, max_n_downloads + 1):
         if i % 25 == 0:
@@ -108,52 +114,28 @@ def scrape_images(search_path, out_path, max_n_downloads, keyword, duplicate):
         preview_image_element = driver.find_element(By.XPATH, preview_image_x_path)
 
         preview_image_url = preview_image_element.get_attribute("src")
-        # print("preview URL", preview_image_url)
-        # print(x_path)
 
         driver.find_element(By.XPATH, x_path).click()
-
-        # element = driver.find_element(By.XPATH, x_path)
-        # driver.execute_script("arguments[0].click();", element)
 
         # Sleep a random time after clicking on the image
         time.sleep(np.random.randint(1, 5))
 
         # //*[@id="islrg"]/div[1]/div[16]/a[1]/div[1]/img
 
-        # page = driver.page_source
-        # soup = bs4.BeautifulSoup(page, 'html.parser')
-        # ImgTags = soup.findAll('img', {'class': 'n3VNCb', 'jsname': 'HiaYvf', 'data-noaft': '1'})
-        # print("number of the ROI tags", len(ImgTags))
-        # link = ImgTags[1].get('src')
-        # #print(len(ImgTags))
-        # #print(link)
-        #
-        # n=0
-        # for tag in ImgTags:
-        #     print(n, tag)
-        #     n+=1
-        # print(len(ImgTags))
-
-        # /html/body/div[2]/c-wiz/div[3]/div[2]/div[3]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div[2]/div[1]/a/img
-
         # It's all about the wait
         time_started = time.time()
 
         while True:
-
             image_element = driver.find_element(By.XPATH,
                                                 """//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div[
                                                2]/div[1]/a/img""")
             image_url = image_element.get_attribute('src')
 
             if image_url != preview_image_url:
-                # print("actual URL", image_url)
                 break
             else:
-                # making a timeout if the full res image can't be loaded
+                # Making a timeout if the full res image can't be loaded
                 current_time = time.time()
-
                 if current_time - time_started > 10:
                     print("Timeout! Will download a lower resolution image and move onto the next one")
                     break
@@ -189,29 +171,3 @@ if __name__ == '__main__':
     args = parse_args()
     # args = argparse.Namespace(s="Good Yoga/Downward-Facing_Dog_pose_or_Adho_Mukha_Svanasana_", t="test")
     main(args)
-# Query: yoga warrior two
-# "https://www.google.com/search?q=yoga%20warrior%20two%20-one%20-reverse&tbm=isch&tbs=rimg:CS26H6M0OM6hYWCmsFeo2fqDsgIGCgIIABAA&hl=en-US&sa=X&ved=0CBsQuIIBahcKEwj4zvXZzezzAhUAAAAAHQAAAAAQBg&biw=859&bih=847"
-# PATH_W_2 = "https://www.google.com/search?q=yoga+warrior+two+&tbm=isch&ved=2ahUKEwiO1YrLzuzzAhUNixoKHbQKCf0Q2" \
-#            "-cCegQIABAA&oq=yoga+warrior+two+&gs_lcp" \
-#            "=CgNpbWcQAzIFCAAQgAQyBggAEAgQHjIGCAAQCBAeUJumbFibpmxg_6dsaABwAHgAgAFHiAGlAZIBATOYAQCgAQGqAQtnd3Mtd2l6LWltZ8ABAQ&sclient=img&ei=YlV6YY6cMI2WarSVpOgP&bih=847&biw=859&hl=en-US "
-# dir_W_2 = 'warrior_two'
-#
-# # Query: yoga warrior one
-# PATH_W_1 = "https://www.google.com/search?q=yoga+warrior+one&tbm=isch&ved=2ahUKEwjJ2d-Z1ezzAhWygM4BHQgoAaIQ2" \
-#            "-cCegQIABAA&oq=yoga+warrior+one&gs_lcp" \
-#            "=CgNpbWcQAzIFCAAQgAQyBggAEAgQHjIGCAAQCBAeMgYIABAIEB4yBAgAEBhQmL8FWI_BBWDAwgVoAHAAeACAAUmIAbwBkgEBM5gBAKABAaoBC2d3cy13aXotaW1nwAEB&sclient=img&ei=Ulx6YcnoFrKBur4PiNCEkAo&bih=847&biw=859&hl=en-US "
-# dir_W_1 = 'warrior_one'
-#
-# # Query: yoga downward dog
-# PATH_D_D = "https://www.google.com/search?q=yoga+downward+dog&tbm=isch&ved=2ahUKEwjK48DF1ezzAhUigHMKHUygAhYQ2" \
-#            "-cCegQIABAA&oq=yoga+downward+dog&gs_lcp" \
-#            "=CgNpbWcQAzIFCAAQgAQyBQgAEIAEMgUIABCABDIGCAAQBRAeMgYIABAFEB4yBggAEAUQHjIGCAAQCBAeMgYIABAIEB4yBggAEAgQHjIGCAAQCBAeOgQIABAYOgQIABAeUJjQBVjM2wVgueAFaABwAHgAgAFEiAHvBZIBAjEzmAEAoAEBqgELZ3dzLXdpei1pbWfAAQE&sclient=img&ei=rlx6YcrUCKKAzgPMwIqwAQ&bih=847&biw=859&hl=en-US "
-# dir_D_D = 'downward_dog'
-
-# # Scrape images
-# # Warrior 1
-# scrape_images(search_path=PATH_W_1, out_path=OUTPUT_PATH, dir_name=dir_W_1, max_n_downloads=max_n_to_download)
-# # Warrior 2
-# scrape_images(search_path=PATH_W_2, out_path=OUTPUT_PATH, dir_name=dir_W_2, max_n_downloads=max_n_to_download)
-# # Downward dog
-# scrape_images(search_path=PATH_D_D, out_path=OUTPUT_PATH, dir_name=dir_D_D, max_n_downloads=max_n_to_download)

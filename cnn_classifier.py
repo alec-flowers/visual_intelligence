@@ -33,7 +33,6 @@ if __name__ == "__main__":
     # plot_data(val_loader, 16)
 
     # Configure the training logging
-    # logger = TensorBoardLogger("tb_logs", name="cnn")
     checkpoint_callback = ModelCheckpoint(monitor="train_loss", dirpath="saved_model/cnn/")
     writer = SummaryWriter('runs/cnn/')
 
@@ -62,8 +61,6 @@ if __name__ == "__main__":
 
         plot_confusion_matrix(targets_val, predicted_class_val, 'validation', save_plot=save_plot)
         plot_confusion_matrix(targets_train, predicted_class_train, 'training', save_plot=save_plot)
-
-    cnn
 
     # INSPECT training
     # run in terminal: tensorboard --logdir=runs/cnn

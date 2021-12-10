@@ -3,11 +3,12 @@ import sys
 
 import cv2
 import mediapipe as mp
+import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
 from data import load_data
-from plot import *
+from plot import plot_image
 from utils import LANDMARK_DICT, load_pickle
 from utils import TRAINPATH, PICKLEDPATH, save_dataframes_to_pickle, \
     POSEDATAFRAME_LIST
@@ -24,7 +25,7 @@ mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
 
 
-def poses_for_dataset(dataloader, skip_image_annotation):
+def poses_for_dataset(dataloader, skip_image_annotation: bool = False):
     assert dataloader.batch_size is None
     result_list = []
     annotated_images = []

@@ -8,20 +8,6 @@ from sklearn.metrics import confusion_matrix
 from utils import PLOT_PATH
 
 
-def plot_data(dataloader, n_images=4):
-    images, labels = next(iter(dataloader))
-    for i in range(n_images):
-        image = images[i].numpy().transpose((1, 2, 0))
-        plt.subplot(int(np.sqrt(n_images)), int(np.sqrt(n_images)), i + 1)
-        plt.xticks([])
-        plt.yticks([])
-        plt.grid(False)
-        plt.imshow(image)
-        plt.xlabel(labels[i].item())
-    plt.tight_layout()
-    plt.show()
-
-
 def plot_image(image, dataloader=False, label=None, title=''):
     if dataloader:
         image = image.numpy().transpose((1, 2, 0))
@@ -80,7 +66,6 @@ def plot_annotated_images(annotated_images, num):
         if annotated_images[j] is None:
             j = j + 1
             continue
-            #annotated_plot.append([[0, 0], [0, 0]])
         else:
             annotated_plot.append(annotated_images[j])
             j = j + 1
