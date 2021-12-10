@@ -1,8 +1,21 @@
 import numpy as np
 import torch
 
+from data import CoordinatesDataset
 
-def evaluate_model(model, dataset, reshape_inputs=False):
+
+def evaluate_model(model, dataset: CoordinatesDataset, reshape_inputs: bool = False):
+    """
+    Make predictions with the trained model.
+    :param model: the MLP or CNN model
+    :type model:
+    :param dataset: the data to make predictions on
+    :type dataset: CoordinatesDataset
+    :param reshape_inputs: for the MLP we need to reshape the input format
+    :type reshape_inputs: bool
+    :return: the targets and the predictions
+    :rtype: Tensor
+    """
     inputs = dataset.coordinates
     targets = dataset.labels
     if reshape_inputs:
