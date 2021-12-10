@@ -10,24 +10,25 @@ from model import MLP
 from plot import plot_classified_images, plot_confusion_matrix
 from test import evaluate_model
 from train import train_model
-from utils import MODEL_PATH
+from utils import MODEL_PATH, PICKLEDPATH
 
 if __name__ == "__main__":
     # Define parameters
     save_plot = False
-    shuffle = True
-    train_from_scratch = False
-    save_model = train_from_scratch
+    train_from_scratch = True
+    visualize_results = True
     min_valid_loss = np.inf
     split_ratio = 0.8
 
     # Model parameters
     batch_size = 64
-    epochs = 50
+    epochs = 100
 
     writer = SummaryWriter('runs/mlp/')
-    # Load the data
-    train_loader, val_loader, train_coordinate_dataset, val_coordinate_dataset = get_data(batch_size, split_ratio)
+
+    train_loader, val_loader, train_coordinate_dataset, val_coordinate_dataset = \
+        get_data(batch_size, split_ratio, PICKLEDPATH)
+
     # Configure the training logging
     logger = TensorBoardLogger("tb_logs", name="mlp")
     checkpoint_callback = ModelCheckpoint(monitor="train_loss", dirpath="saved_model/mlp/")
@@ -43,26 +44,26 @@ if __name__ == "__main__":
     optimizer = torch.optim.Adam(mlp.parameters(), lr=1e-4)
 
     if train_from_scratch:
-        train_model(mlp, train_loader, val_loader, loss_function, optimizer, epochs, writer, save_model)
+        train_model(mlp, train_loader, val_loader, loss_function, optimizer, epochs, writer, save_model=True)
 
     else:
-        # Load a previously trained model that has the following stats:
-        # Average training after epoch    50| Loss: 0.382 | Acc: 0.953
-        # Average validation after epoch  50| Loss: 0.821 | Acc: 0.907
-        checkpoint = torch.load(str(MODEL_PATH) + "/mlp" + "/2021_11_22_20_46_21.ckpt")
+        # Load a previously trained model
+        model_version = "2021_12_10_10_42_37.ckpt"
+        checkpoint = torch.load(str(MODEL_PATH) + "/mlp/" + model_version)
         mlp.load_state_dict(checkpoint['model_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-        annotated_images_filtered = get_not_none_annotated_images()
-        if shuffle:
-            annotated_images_filtered = np.array(annotated_images_filtered, dtype=object)[train_coordinate_dataset.index_order]
+    annotated_images_filtered = get_not_none_annotated_images()
+    annotated_images_filtered = \
+        np.array(annotated_images_filtered, dtype=object)[train_coordinate_dataset.index_order]
 
-        targets_train, predicted_class_train = evaluate_model(mlp, train_coordinate_dataset, reshape_inputs=True)
-        targets_val, predicted_class_val = evaluate_model(mlp, val_coordinate_dataset, reshape_inputs=True)
+    targets_train, predicted_class_train = evaluate_model(mlp, train_coordinate_dataset, reshape_inputs=True)
+    targets_val, predicted_class_val = evaluate_model(mlp, val_coordinate_dataset, reshape_inputs=True)
 
+    if visualize_results:
         # Confusion matrix
-        # plot_confusion_matrix(targets_val, predicted_class_val, 'validation', save_plot=save_plot)
-        # plot_confusion_matrix(targets_train, predicted_class_train, 'training', save_plot=save_plot)
+        plot_confusion_matrix(targets_val, predicted_class_val, 'validation', save_plot=save_plot)
+        plot_confusion_matrix(targets_train, predicted_class_train, 'training', save_plot=save_plot)
 
         # Plot misclassified train images
         plot_classified_images(targets_train, predicted_class_train, annotated_images_filtered,
@@ -79,9 +80,6 @@ if __name__ == "__main__":
         plot_classified_images(targets_val, predicted_class_val, annotated_images_filtered,
                                type_="validation", max_n_to_plot=16, classified="correctly classified",
                                split_ratio=split_ratio)
-
-
-    mlp
 
     # INSPECT training
     # run in terminal: tensorboard --logdir=runs

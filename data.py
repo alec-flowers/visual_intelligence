@@ -115,35 +115,13 @@ def train_val_split(images, labels, batch_size=32, shuffle=True, split_ratio=0.8
     return train_dataloader, val_loader, train_dataset, val_dataset
 
 
-# TODO refactor code bc this is the same as Coordinates Dataset
-class RawImageDataset(Dataset):
-    def __init__(self, images, labels, set_type, shuffle=True, split_ratio=0.8):
-        if shuffle:
-            np.random.seed(17)
-            shuffled_indices = np.random.permutation(images.shape[0])
-            images = images[shuffled_indices]
-            labels = labels[shuffled_indices]
-            self.index_order = shuffled_indices
-        split_idx = int(split_ratio * images.shape[0])
-        if set_type == "train":
-            self.images = images[:split_idx]
-            self.labels = labels[:split_idx]
-        elif set_type == "val":
-            self.images = images[split_idx:]
-            self.labels = labels[split_idx:]
-
-    def __len__(self):
-        return self.labels.shape[0]
-
-    def __getitem__(self, idx):
-        assert 0 <= idx < len(self)
-        images = self.images[idx]
-        label = self.labels[idx]
-
-        return images, label
-
-
-def get_not_none_annotated_images():
+def get_not_none_annotated_images() -> list:
+    """
+    Not all the images have a corresponding pose estimate.
+    In order to plot the data, we need to filter out these images.
+    :return: filtered images
+    :rtype: list
+    """
     annotated_images = load_pickle(PICKLEDPATH, "annotated_images.pickle")
     annotated_images_filtered = []
     for image in annotated_images:
@@ -152,7 +130,21 @@ def get_not_none_annotated_images():
     return annotated_images_filtered
 
 
-def get_data(batch_size, split_ratio, path=PICKLEDPATH):
+def get_data(batch_size: int, split_ratio: float, path: str):
+    """
+    Load the train and validation data from the previously estimated poses.
+    :param batch_size: batch size
+    :type batch_size: int
+    :param split_ratio: train and validation split ratio
+    :type split_ratio: float
+    :param path: path to the data
+    :type path: str
+    :return: train_loader, val_loader, train_coordinate_dataset, val_coordinate_dataset
+    :rtype: torch.utils.data.dataloader.DataLoader,
+            torch.utils.data.dataloader.DataLoader,
+            CoordinatesDataset,
+            CoordinatesDataset
+    """
     numpy_data_world = load_pickle(path, "pose_world_landmark_numpy.pickle")
     labels_drop_na = load_pickle(path, "labels_drop_na.pickle")
     train_coordinate_dataset = CoordinatesDataset(numpy_data_world, labels_drop_na, set_type="train",
