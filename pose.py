@@ -3,11 +3,10 @@ import sys
 
 import cv2
 import mediapipe as mp
-import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from data import load_data
+from data.data import load_data
 from plot import *
 from utils import LANDMARK_DICT, load_pickle, CLASS_MAPPINGS_IDX, POSE_QUALITY_MAPPINGS
 from utils import TRAINPATH, PICKLEDPATH, save_dataframes_to_pickle, \

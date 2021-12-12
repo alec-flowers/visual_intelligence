@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from data import create_angle_features
+from data.data import create_angle_features
 from utils import PICKLEDPATH, load_pickle
 
 

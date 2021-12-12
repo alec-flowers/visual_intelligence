@@ -3,11 +3,11 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 
-from data import load_data, train_val_split
-from model import CNN
+from data.data import load_data, train_val_split
+from cnn.cnn_model import CNN
 from plot import plot_confusion_matrix
-from test import evaluate_model
-from train import train_model
+from cnn.test import evaluate_model
+from cnn.train import train_model
 from utils import TRAINPATH, MODEL_PATH
 
 if __name__ == "__main__":

@@ -2,8 +2,8 @@ import numpy as np
 import torch
 from matplotlib import pyplot as plt
 
-from cGAN import get_device, generate_noise, load_generator
-from model import Generator
+from gan.cGAN import get_device, generate_noise, load_generator
+from gan.gan_model import Generator
 from utils import BODY_POSE_CONNECTIONS
 
 
@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     device = get_device()
     generator = Generator().to(device)
-    generator = load_generator(generator, version, "./saved_model/cGAN")
+    generator = load_generator(generator, version, "../saved_model/cGAN")
 
     images = generate_images(generator, labels, device)
 

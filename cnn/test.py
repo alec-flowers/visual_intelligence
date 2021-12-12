@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from data import CoordinatesDataset
+from data.data import CoordinatesDataset
 
 
 def evaluate_model(model, dataset: CoordinatesDataset, reshape_inputs: bool = False):

@@ -3,8 +3,8 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 
-from data import get_data
-from model import Generator, Discriminator
+from data.data import get_data
+from gan.gan_model import Generator, Discriminator
 from utils import GOOD_POSES_PATH
 
 adversarial_loss = nn.BCELoss()
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     LATENT_DIM = 100
     N_CLASSES = 3
     start = None
-    c_GAN_path = "./saved_model/cGAN"
+    c_GAN_path = "../saved_model/cGAN"
 
     # Set fixed random number seed
     torch.manual_seed(42)
