@@ -1,5 +1,5 @@
 import os
-from typing import Any, Callable, Optional, Tuple, List, Dict
+from typing import Any, Callable, Optional, Tuple, List, Dict, Sequence
 
 import numpy as np
 import torch
@@ -8,7 +8,7 @@ from torch.utils.data import Dataset, DataLoader, Subset
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 
-from utils import load_pickle, PICKLEDPATH, TRAINPATH, calc_limb_lengths
+from utils import load_pickle, PICKLEDPATH, TRAINPATH, calc_angle, LANDMARKS_ANGLES_DICT, DATAPATH, calc_limb_lengths
 
 IMG_EXTENSIONS = (".jpg", ".jpeg", ".png", ".ppm", ".bmp", ".pgm", ".tif", ".tiff", ".webp")
 
@@ -18,6 +18,22 @@ def pil_loader(path: str) -> Image.Image:
     with open(path, "rb") as f:
         img = Image.open(f)
         return img.convert("RGB")
+
+
+class SubsetWithAttributes(Dataset):
+    def __init__(self, dataset: Dataset, indices: Sequence[int]) -> None:
+        self.dataset = dataset
+        self.indices = indices
+        self.classes = self.dataset.classes
+        self.class_to_idx = self.dataset.class_to_idx
+
+    def __getitem__(self, idx):
+        if isinstance(idx, list):
+            return self.dataset[[self.indices[i] for i in idx]]
+        return self.dataset[self.indices[idx]]
+
+    def __len__(self):
+        return len(self.indices)
 
 
 class CoordinatesDataset(Dataset):
@@ -82,8 +98,38 @@ class ClassifyDataset(ImageFolder):
         return classes, class_to_idx
 
 
-def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=False, batch_sampler=None, subset=False,
-              subset_size=100) -> Tuple[ClassifyDataset, DataLoader]:
+class GoodBadDataset(ImageFolder):
+    def __init__(
+            self,
+            root: str,
+            loader: Callable[[str], Any] = pil_loader,
+            transform: Optional[Callable] = None,
+            is_valid_file: Optional[Callable[[str], bool]] = None
+    ):
+
+        super(ImageFolder, self).__init__(
+            root,
+            loader,
+            IMG_EXTENSIONS if is_valid_file is None else None,
+            transform=transform)
+
+    def find_classes(self, directory: str) -> Tuple[List[str], Dict[str, int]]:
+        classes = sorted(entry.name for entry in os.scandir(directory) if entry.is_dir() and not entry.name.startswith("2_"))
+        if not classes:
+            raise FileNotFoundError(f"Couldn't find any class folder in {directory}.")
+
+        # Map classes to [downwardDog, warrior1, warrior2]
+        class_to_idx = {cls_names: i for i, cls_names in enumerate(classes)}
+
+        return classes, class_to_idx
+
+TRANSFORM = (transforms.Compose([# transforms.Grayscale(num_output_channels=3),
+                                         transforms.ToTensor(),
+                                         transforms.ConvertImageDtype(torch.uint8)]))
+
+
+def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=True, batch_sampler=None, subset=False,
+              classify=True, subset_size=100) -> Tuple[ClassifyDataset, DataLoader]:
     if resize:
         resize_size = 300
         transform = (transforms.Compose([transforms.Resize(resize_size),
@@ -96,10 +142,10 @@ def load_data(path=TRAINPATH, resize=False, batch_size=32, shuffle=False, batch_
             transforms.ToTensor(),
             transforms.ConvertImageDtype(torch.uint8)]))
     dataset = ClassifyDataset(path, transform=transform)
-    if subset:
-        indices = torch.arange(subset_size)
-        dataset = Subset(dataset, indices)
-        shuffle = True
+    if classify:
+        dataset = ClassifyDataset(path, transform=transform)
+    else:
+        dataset = GoodBadDataset(path, transform=transform)
 
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, batch_sampler=batch_sampler)
 
@@ -157,3 +203,17 @@ def get_data(batch_size: int, split_ratio: float, path: str):
     val_loader = DataLoader(val_coordinate_dataset, batch_size=batch_size, num_workers=12)
 
     return train_loader, val_loader, train_coordinate_dataset, val_coordinate_dataset
+
+
+def create_angle_features(df):
+    for angle_name, lms in LANDMARKS_ANGLES_DICT.items():
+        df[angle_name] = df.apply(lambda x: calc_angle(x[lms[0]], x[lms[1]], x[lms[2]]), axis=1)
+
+
+if __name__ == '__main__':
+    df_world = load_pickle(DATAPATH, "pose_world_landmark_all_df.pickle")
+    df_world = df_world.dropna(axis=0, how='any')
+    for angle_name, lms in LANDMARKS_ANGLES_DICT.items():
+        df_world[angle_name] = df_world.apply(lambda x: calc_angle(x[lms[0]], x[lms[1]], x[lms[2]]), axis=1)
+    print("YOLO")
+

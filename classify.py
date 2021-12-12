@@ -8,9 +8,37 @@ from torch.utils.tensorboard import SummaryWriter
 from data import get_not_none_annotated_images, get_data
 from model import MLP
 from plot import plot_classified_images, plot_confusion_matrix
-from test import evaluate_model
+# from test import evaluate_model  # TODO AF: Have weird import error for this guy
 from train import train_model
 from utils import MODEL_PATH, PICKLEDPATH
+
+
+def classify_image(coordinates, reshape_inputs=True):
+    if reshape_inputs:
+        input = torch.from_numpy(coordinates)
+        input = input.view(input.size(0), -1).float()
+
+    # Set fixed random number seed
+    torch.manual_seed(42)
+
+    # Initialize the MLP
+    mlp = MLP(num_classes=3)
+
+    # Define the loss function and optimizer
+    # loss_function = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(mlp.parameters(), lr=1e-4)
+
+    checkpoint = torch.load(str(MODEL_PATH) + "/MLP"+"/2021_11_22_20_46_21.ckpt")
+    mlp.load_state_dict(checkpoint['model_state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+    mlp.eval()
+    with torch.no_grad():
+        # Predict training data
+        prediction = mlp(input)
+        predicted_class = np.argmax(prediction, axis=1)
+        return predicted_class
+
 
 if __name__ == "__main__":
     # Define parameters

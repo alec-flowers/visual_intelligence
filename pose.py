@@ -8,8 +8,8 @@ import pandas as pd
 from tqdm import tqdm
 
 from data import load_data
-from plot import plot_image
-from utils import LANDMARK_DICT, load_pickle
+from plot import *
+from utils import LANDMARK_DICT, load_pickle, CLASS_MAPPINGS_IDX, POSE_QUALITY_MAPPINGS
 from utils import TRAINPATH, PICKLEDPATH, save_dataframes_to_pickle, \
     POSEDATAFRAME_LIST
 
@@ -73,23 +73,29 @@ def estimate_poses(image, label, skip_image_annotation, plot=False):
     return results, annotated_image
 
 
+def pose_landmarks_to_list(solution, pose_var):
+    val = []
+    visib = []
+    nump = []
+    for land in getattr(solution, pose_var).landmark:
+        x = land.x
+        y = land.y
+        z = land.z
+        vis = land.visibility
+        val.append([x, y, z, vis])
+        nump.append([x, y, z])
+        visib.append(vis)
+
+    return val, visib, nump
+
+
 def pose_to_dataframe(estimated_poses, dataset, pose_var):
     all_val = []
     visib_val = []
     for_numpy = []
     for i in range(len(estimated_poses)):
         if estimated_poses[i]:
-            val = []
-            visib = []
-            nump = []
-            for land in getattr(estimated_poses[i], pose_var).landmark:
-                x = land.x
-                y = land.y
-                z = land.z
-                vis = land.visibility
-                val.append([x, y, z, vis])
-                nump.append([x, y, z])
-                visib.append(vis)
+            val, visib, nump = pose_landmarks_to_list(estimated_poses[i], pose_var)
             all_val.append(val)
             visib_val.append(visib)
             for_numpy.append(nump)
@@ -106,8 +112,16 @@ def pose_to_dataframe(estimated_poses, dataset, pose_var):
     labels = []
     for _, label in dataset:
         labels.append(label)
-    df['label'] = labels
-    df_vis['label'] = labels
+    df['tmp'] = labels
+    df_vis['tmp'] = labels
+
+    df['label'] = df.apply(lambda x: CLASS_MAPPINGS_IDX[x['tmp']], axis=1)
+    df['quality'] = df.apply(lambda x: POSE_QUALITY_MAPPINGS[x['tmp']], axis=1)
+    df.drop('tmp', axis=1, inplace=True)
+
+    df_vis['label'] = df_vis.apply(lambda x: CLASS_MAPPINGS_IDX[x['tmp']], axis=1)
+    df_vis['quality'] = df_vis.apply(lambda x: POSE_QUALITY_MAPPINGS[x['tmp']], axis=1)
+    df_vis.drop('tmp', axis=1, inplace=True)
 
     labels_drop_na = np.array(df_vis.dropna(axis=0, how='any')['label'])
 

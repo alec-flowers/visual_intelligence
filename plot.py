@@ -5,7 +5,7 @@ import numpy as np
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
 
-from utils import PLOT_PATH
+from utils import PLOT_PATH, BODY_POSE_CONNECTIONS
 
 
 def plot_image(image, dataloader=False, label=None, title=''):
@@ -148,3 +148,51 @@ def plot_confusion_matrix(targets, predicted, title=None, save_plot=False):
         fig.figure.savefig(PLOT_PATH + title + "_data_confusion_matrix.png")
     plt.show()
 
+
+def plot_3d_keypoints(x, y, z, elev=60, azim=90):
+    fig = plt.figure()
+    ax = plt.axes(projection="3d")
+    ax.scatter3D(x, y, z)
+    ax.view_init(elev=elev, azim=azim)
+    for i,j in BODY_POSE_CONNECTIONS:
+        ax.plot([x[i],x[j]], [y[i],y[j]], [z[i],z[j]], color='b')
+    plt.show()
+
+
+def plot_distribution(df, angles, LANDMARKS):
+    fig, ax = plt.subplots(2, 8, figsize=(30, 15))
+    sns.set_palette(sns.color_palette("Set1"))
+    for idx, col in enumerate(LANDMARKS):
+        y = int(idx/8)
+        x = idx % 8
+        sns.histplot(df, x=col, hue='quality', ax=ax[y, x], bins=10, multiple='dodge')
+        ax[y, x].vlines(angles[col][0], 0, 200)
+        ax[y, x].vlines(angles[col][2], 0, 200)
+        ax[y, x].tick_params(axis='x')
+        ax[y, x].set_ylim(0,200)
+        ax[y, x].set_xlim(0,180)
+
+
+def plot_distribution_with_image(df, df_new, angles, LANDMARKS):
+    fig, ax = plt.subplots(2, 8, figsize=(30, 15))
+    sns.set_palette(sns.color_palette("Set1"))
+    for idx, col in enumerate(LANDMARKS):
+        y = int(idx/8)
+        x = idx % 8
+        sns.histplot(df, x=col, hue='quality', ax=ax[y, x], bins=10, multiple='dodge')
+        ax[y, x].vlines(angles[col][0], 0, 200)
+        ax[y, x].vlines(df_new[col][0], 0, 200, colors='b', linestyles='dashed')
+        ax[y, x].vlines(angles[col][2], 0, 200)
+        ax[y, x].tick_params(axis='x')
+        ax[y, x].set_ylim(0,200)
+        ax[y, x].set_xlim(0,180)
+    plt.show()
+
+    for ang in angles:
+        low = angles[ang][0]
+        high = angles[ang][2]
+        current = df_new[ang][0]
+        if current < low:
+            print(f"{ang} is to small by - {low - current:.1f}")
+        elif current > high:
+            print(f"{ang} is to large by - {current - high:.1f}")
