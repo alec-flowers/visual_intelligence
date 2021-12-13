@@ -3,7 +3,7 @@ import os
 import pathlib
 import numpy as np
 
-REPO_ROOT = pathlib.Path(__file__).absolute().parents[0].resolve()
+REPO_ROOT = pathlib.Path(__file__).absolute().parents[1].resolve()
 assert (REPO_ROOT.exists())
 DATAPATH = (REPO_ROOT / "data").absolute().resolve()
 assert (DATAPATH.exists())

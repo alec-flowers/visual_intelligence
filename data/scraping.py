@@ -10,7 +10,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
-from utils import save_pickle, load_pickle
+from pose.utils import save_pickle, load_pickle
 
 # SOURCE AND HOW TO INSTALL DEPENDENCIES ON LINUX
 # Source Read: https://ladvien.com/scraping-internet-for-magic-symbols/

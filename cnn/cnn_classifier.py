@@ -5,10 +5,10 @@ from torch.utils.tensorboard import SummaryWriter
 
 from data.data import load_data, train_val_split
 from cnn.cnn_model import CNN
-from plot import plot_confusion_matrix
+from pose.plot import plot_confusion_matrix
 from cnn.test import evaluate_model
 from cnn.train import train_model
-from utils import TRAINPATH, MODEL_PATH
+from pose.utils import TRAINPATH, MODEL_PATH
 
 if __name__ == "__main__":
     # Define parameters

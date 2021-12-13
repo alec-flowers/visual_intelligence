@@ -5,7 +5,7 @@ from torch.autograd import Variable
 
 from data.data import get_data
 from gan.gan_model import Generator, Discriminator
-from utils import GOOD_POSES_PATH
+from pose.utils import GOOD_POSES_PATH
 
 adversarial_loss = nn.BCELoss()
 TRAIN_ON_GPU = False

@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 
 from gan.cGAN import get_device, generate_noise, load_generator
 from gan.gan_model import Generator
-from utils import BODY_POSE_CONNECTIONS
+from pose.utils import BODY_POSE_CONNECTIONS
 
 
 def plot_3d_keypoints(x, y, z):

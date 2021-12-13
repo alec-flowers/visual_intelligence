@@ -1,6 +1,4 @@
-import torch
 import torch.nn as nn
-from utils import BODY_POSE_CONNECTIONS, NOISE_DIMENSION
 
 N_CLASSES = 3
 LATENT_DIM = 50

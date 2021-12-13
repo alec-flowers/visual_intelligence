@@ -7,15 +7,15 @@ import pandas as pd
 from tqdm import tqdm
 
 from data.data import load_data
-from plot import *
-from utils import LANDMARK_DICT, load_pickle, CLASS_MAPPINGS_IDX, POSE_QUALITY_MAPPINGS
-from utils import TRAINPATH, PICKLEDPATH, save_dataframes_to_pickle, \
+from pose.plot import *
+from pose.utils import LANDMARK_DICT, load_pickle, CLASS_MAPPINGS_IDX, POSE_QUALITY_MAPPINGS
+from pose.utils import TRAINPATH, PICKLEDPATH, save_dataframes_to_pickle, \
     POSEDATAFRAME_LIST
 
 # from plot import *
 
 
-module_path = os.path.abspath(os.path.join('..'))
+module_path = os.path.abspath(os.path.join('../..'))
 if module_path not in sys.path:
     sys.path.append(module_path)
 

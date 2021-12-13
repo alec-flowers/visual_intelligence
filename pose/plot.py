@@ -5,7 +5,7 @@ import numpy as np
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
 
-from utils import PLOT_PATH, BODY_POSE_CONNECTIONS
+from pose.utils import PLOT_PATH, BODY_POSE_CONNECTIONS
 
 
 def plot_image(image, dataloader=False, label=None, title=''):
@@ -184,8 +184,8 @@ def plot_distribution_with_image(df, df_new, angles, LANDMARKS):
         ax[y, x].vlines(df_new[col][0], 0, 200, colors='b', linestyles='dashed')
         ax[y, x].vlines(angles[col][2], 0, 200)
         ax[y, x].tick_params(axis='x')
-        ax[y, x].set_ylim(0,200)
-        ax[y, x].set_xlim(0,180)
+        ax[y, x].set_ylim(0, 200)
+        ax[y, x].set_xlim(0, 180)
     plt.show()
 
     for ang in angles:
@@ -193,6 +193,6 @@ def plot_distribution_with_image(df, df_new, angles, LANDMARKS):
         high = angles[ang][2]
         current = df_new[ang][0]
         if current < low:
-            print(f"{ang} is to small by - {low - current:.1f}")
+            print(f"{ang} is to small by - {low - current:.1f} degrees")
         elif current > high:
-            print(f"{ang} is to large by - {current - high:.1f}")
+            print(f"{ang} is to large by - {current - high:.1f} degrees")

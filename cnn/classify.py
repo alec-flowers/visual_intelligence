@@ -7,10 +7,10 @@ from torch.utils.tensorboard import SummaryWriter
 
 from data.data import get_not_none_annotated_images, get_data
 from cnn.cnn_model import MLP
-from plot import plot_classified_images, plot_confusion_matrix
+from pose.plot import plot_classified_images, plot_confusion_matrix
 # from test import evaluate_model  # TODO AF: Have weird import error for this guy
 from cnn.train import train_model
-from utils import MODEL_PATH, PICKLEDPATH
+from pose.utils import MODEL_PATH, PICKLEDPATH
 
 
 def classify_image(coordinates, reshape_inputs=True):

@@ -4,11 +4,11 @@ from typing import Any, Callable, Optional, Tuple, List, Dict, Sequence
 import numpy as np
 import torch
 from PIL import Image
-from torch.utils.data import Dataset, DataLoader, Subset
+from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 
-from utils import load_pickle, PICKLEDPATH, TRAINPATH, calc_angle, LANDMARKS_ANGLES_DICT, DATAPATH, calc_limb_lengths
+from pose.utils import load_pickle, PICKLEDPATH, TRAINPATH, calc_angle, LANDMARKS_ANGLES_DICT, DATAPATH, calc_limb_lengths
 
 IMG_EXTENSIONS = (".jpg", ".jpeg", ".png", ".ppm", ".bmp", ".pgm", ".tif", ".tiff", ".webp")
 

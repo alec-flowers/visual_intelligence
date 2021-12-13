@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 from gan.cGAN import get_device, generate_noise, load_generator
 from data.data import get_data
 from gan.gan_model import LimbLengthGenerator
-from utils import BODY_POSE_CONNECTIONS, GOOD_POSES_PATH, NOISE_DIMENSION, calc_limb_lengths, PLOT_PATH
+from pose.utils import BODY_POSE_CONNECTIONS, GOOD_POSES_PATH, NOISE_DIMENSION, calc_limb_lengths, PLOT_PATH
 
 
 def plot_3d_keypoints(x, y, z, title=""):
