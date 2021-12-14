@@ -38,7 +38,6 @@ def plot_image_grid(images, n_images, dataloader=False, title="", subplot_title=
     plt.tight_layout()
     plt.subplots_adjust(top=0.88)
     plt.suptitle(title, size=16)
-    #plt.savefig('annotated_images.jpg')
     plt.show()
 
 
