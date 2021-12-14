@@ -7,6 +7,7 @@ LATENT_DIM = 50
 GENERATOR_OUTPUT_IMAGE_SHAPE = 33 * 3
 EMBEDDING_DIM = 100
 
+
 class Generator(nn.Module):
     def __init__(self):
         super(Generator, self).__init__()

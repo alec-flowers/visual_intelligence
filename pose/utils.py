@@ -19,6 +19,8 @@ PLOT_PATH = (REPO_ROOT / "plots").absolute().resolve()
 assert (PLOT_PATH.exists())
 GOOD_POSES_PATH = (DATAPATH / "good_poses").absolute().resolve()
 assert (GOOD_POSES_PATH.exists())
+CLIMBGAN_PATH = (MODEL_PATH / "cLimbGAN").absolute().resolve()
+assert (CLIMBGAN_PATH.exists())
 
 NOISE_DIMENSION = 33*3
 
