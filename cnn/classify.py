@@ -5,10 +5,11 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 
+from cnn.test import evaluate_model
 from data.data import get_not_none_annotated_images, get_data
 from cnn.cnn_model import MLP
 from pose.plot import plot_classified_images, plot_confusion_matrix
-# from test import evaluate_model  # TODO AF: Have weird import error for this guy
+# from test import evaluate_model  # TODO AF: Have weird import error for this guy Nina: think its cnn.test.evaluate_model
 from cnn.train import train_model
 from pose.utils import MODEL_PATH, PICKLEDPATH
 
