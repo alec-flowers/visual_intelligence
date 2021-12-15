@@ -4,10 +4,10 @@ import torch.optim as optim
 from torch.autograd import Variable
 
 from data.data import get_data
-from gan.gan_model import LimbLengthGenerator, LimbLengthDiscriminator
-from pose.utils import GOOD_POSES_PATH, NOISE_DIMENSION
 from gan.cGAN import save_models, print_training_progress, get_device, generator_loss, \
     discriminator_loss, weights_init, generate_noise, load_model
+from gan.gan_model import LimbLengthGenerator, LimbLengthDiscriminator
+from pose.utils import GOOD_POSES_PATH, NOISE_DIMENSION
 
 adversarial_loss = nn.BCELoss()
 TRAIN_ON_GPU = False

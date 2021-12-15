@@ -1,10 +1,10 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 from data.data import create_angle_features
-from pose.utils import PICKLEDPATH, load_pickle, BODY_POSE_CONNECTIONS
 from pose.plot import plot_image_grid
+from pose.utils import PICKLEDPATH, load_pickle, BODY_POSE_CONNECTIONS
 
 
 def front_leg(plane_x, plane_y, plane_z, left_foot, right_foot):

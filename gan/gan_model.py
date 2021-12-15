@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+
 from pose.utils import BODY_POSE_CONNECTIONS
 
 N_CLASSES = 3

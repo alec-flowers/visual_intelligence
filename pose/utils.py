@@ -1,6 +1,7 @@
-import pickle
 import os
 import pathlib
+import pickle
+
 import numpy as np
 
 REPO_ROOT = pathlib.Path(__file__).absolute().parents[1].resolve()
