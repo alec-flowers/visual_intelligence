@@ -148,7 +148,7 @@ def plot_confusion_matrix(targets, predicted, title=None, save_plot=False):
     plt.show()
 
 
-def plot_3d_keypoints(x, y, z, elev=60, azim=90):
+def plot_3d_keypoints(x, y, z, elev=-50, azim=270):
     fig = plt.figure()
     ax = plt.axes(projection="3d")
     ax.scatter3D(x, y, z)

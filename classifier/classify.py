@@ -28,7 +28,7 @@ def classify_image(coordinates, reshape_inputs=True):
     # loss_function = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(mlp.parameters(), lr=1e-4)
 
-    checkpoint = torch.load(str(MODEL_PATH) + "/MLP"+"/2021_11_22_20_46_21.ckpt")
+    checkpoint = torch.load(str(MODEL_PATH) + "/mlp"+"/2021_11_22_20_46_21.ckpt")
     mlp.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
