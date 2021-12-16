@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 from matplotlib import pyplot as plt
 
-from pose.utils import PLOT_PATH
+from pose.pose_utils import PLOT_PATH
 
 
 def import_images():

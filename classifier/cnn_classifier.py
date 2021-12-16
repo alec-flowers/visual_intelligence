@@ -4,16 +4,15 @@ from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 
 from classifier.classifier_models import CNN
-from classifier.test import evaluate_model
-from classifier.train import train_model
-from data.data import load_data, train_val_split
+from classifier.test_classifier import evaluate_model
+from classifier.train_classifier import train_model
+from data.data_loading import load_data, train_val_split
 from pose.plot import plot_confusion_matrix
-from pose.utils import TRAINPATH, MODEL_PATH
+from pose.pose_utils import TRAINPATH, MODEL_PATH
 
 if __name__ == "__main__":
-    # Define parameters
+    # Define general parameters
     shuffle = True
-    subset = False
     train_from_scratch = False
     save_model = train_from_scratch
     save_plot = False
@@ -21,16 +20,12 @@ if __name__ == "__main__":
     # Model parameters
     batch_size = 660
     epochs = 10
-    gpus = 0
 
     # Load the data
-    dataset, dataloader = load_data(path=TRAINPATH, resize=True, batch_size=batch_size, shuffle=False, subset=subset)
+    dataset, dataloader = load_data(path=TRAINPATH, resize=True, batch_size=batch_size, shuffle=False)
     images, labels = next(iter(dataloader))
     train_loader, val_loader, train_dataset, val_dataset = train_val_split(images, labels, batch_size=64,
                                                                            shuffle=shuffle, split_ratio=0.8)
-
-    # plot_data(train_loader, 16)
-    # plot_data(val_loader, 16)
 
     # Configure the training logging
     checkpoint_callback = ModelCheckpoint(monitor="train_loss", dirpath="saved_model/classifier/")

@@ -5,7 +5,7 @@ import numpy as np
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
 
-from pose.utils import PLOT_PATH, BODY_POSE_CONNECTIONS
+from pose.pose_utils import PLOT_PATH, BODY_POSE_CONNECTIONS
 
 
 def plot_image(image, dataloader=False, label=None, title=''):

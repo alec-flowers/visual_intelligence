@@ -3,11 +3,11 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 
-from data.data import get_data
+from data.data_loading import get_data
 from gan.cGAN import save_models, print_training_progress, get_device, generator_loss, \
     discriminator_loss, weights_init, generate_noise, load_model
-from gan.gan_model import LimbLengthGenerator, LimbLengthDiscriminator
-from pose.utils import GOOD_POSES_PATH, NOISE_DIMENSION, CLIMBGAN_PATH
+from gan.gan_models import LimbLengthGenerator, LimbLengthDiscriminator
+from pose.pose_utils import GOOD_POSES_PATH, NOISE_DIMENSION, CLIMBGAN_PATH
 
 adversarial_loss = nn.BCELoss()
 TRAIN_ON_GPU = False

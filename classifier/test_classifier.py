@@ -25,7 +25,6 @@ def evaluate_model(model, dataset: CoordinatesDataset, reshape_inputs: bool = Fa
 
     model.eval()
     with torch.no_grad():
-        # Predict training data
         predictions = model(inputs)
         predicted_class = np.argmax(predictions, axis=1)
         return targets, predicted_class

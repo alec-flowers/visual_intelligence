@@ -2,11 +2,11 @@ import numpy as np
 import torch
 from matplotlib import pyplot as plt
 
-from data.data import get_data
+from data.data_loading import get_data
 from gan.cGAN import get_device, generate_noise, load_generator
-from gan.gan_model import LimbLengthGenerator
+from gan.gan_models import LimbLengthGenerator
 from pose.plot import plot_3d_keypoints
-from pose.utils import GOOD_POSES_PATH, NOISE_DIMENSION, calc_limb_lengths, PLOT_PATH, CLIMBGAN_PATH
+from pose.pose_utils import GOOD_POSES_PATH, NOISE_DIMENSION, calc_limb_lengths, PLOT_PATH, CLIMBGAN_PATH
 
 
 def differences_in_limb_lengths(generated_limb_length: np.array, original_limb_length: np.array) -> float:

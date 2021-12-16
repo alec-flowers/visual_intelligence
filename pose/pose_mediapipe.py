@@ -6,10 +6,10 @@ import mediapipe as mp
 import pandas as pd
 from tqdm import tqdm
 
-from data.data import load_data
+from data.data_loading import load_data
 from pose.plot import *
-from pose.utils import LANDMARK_DICT, load_pickle, CLASS_MAPPINGS_IDX, POSE_QUALITY_MAPPINGS
-from pose.utils import TRAINPATH, PICKLEDPATH, save_dataframes_to_pickle, \
+from pose.pose_utils import LANDMARK_DICT, load_pickle, CLASS_MAPPINGS_IDX, POSE_QUALITY_MAPPINGS
+from pose.pose_utils import TRAINPATH, PICKLEDPATH, save_dataframes_to_pickle, \
     POSEDATAFRAME_LIST
 
 # from plot import *
@@ -131,18 +131,15 @@ if __name__ == "__main__":
     # Define parameters
     shuffle = False
     run_from_scratch = False
-    subset = False  # Take a subset of 100 images out of the 660 images?
     save_poses = True  # Save poses after estimated?
 
     # Load the data
-    dataset, dataloader = load_data(path=TRAINPATH, batch_size=None, shuffle=shuffle, subset=subset, subset_size=100)
+    dataset, dataloader = load_data(path=TRAINPATH, batch_size=None, shuffle=shuffle)
 
     if run_from_scratch:
-        # Do the pose estimation
+        # Pose estimation
         estimated_poses, annotated_images = poses_for_dataset(dataloader, skip_image_annotation=True)
-        # plot_annotated_images(annotated_images, 9)
 
-        # NOTE NUMPY DATA TAKES OUT NULLS, will have to take out nulls in labels
         df, df_vis, numpy_data, labels_drop_na = pose_to_dataframe(estimated_poses, dataset, pose_var='pose_landmarks')
         df_world, df_vis_world, numpy_data_world, _ = pose_to_dataframe(estimated_poses, dataset,
                                                                         pose_var='pose_world_landmarks')

@@ -3,9 +3,9 @@ import torch
 from matplotlib import pyplot as plt
 
 from gan.cGAN import get_device, generate_noise, load_generator
-from gan.gan_model import Generator
+from gan.gan_models import Generator
 from pose.plot import plot_3d_keypoints
-from pose.utils import CGAN_PATH
+from pose.pose_utils import CGAN_PATH
 
 
 def generate_images(generator, labels, device):

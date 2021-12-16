@@ -6,11 +6,11 @@ from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 
 from classifier.classifier_models import MLP
-from classifier.test import evaluate_model
-from classifier.train import train_model
-from data.data import get_not_none_annotated_images, get_data
+from classifier.test_classifier import evaluate_model
+from classifier.train_classifier import train_model
+from data.data_loading import get_not_none_annotated_images, get_data
 from pose.plot import plot_classified_images, plot_confusion_matrix
-from pose.utils import MODEL_PATH, PICKLEDPATH
+from pose.pose_utils import MODEL_PATH, PICKLEDPATH
 
 
 def classify_image(coordinates, reshape_inputs=True):
@@ -41,7 +41,7 @@ def classify_image(coordinates, reshape_inputs=True):
 
 
 if __name__ == "__main__":
-    # Define parameters
+    # Define general parameters
     save_plot = False
     train_from_scratch = True
     visualize_results = True

@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -7,7 +9,11 @@ from pose.plot import plot_image_grid
 from pose.pose_utils import PICKLEDPATH, load_pickle, BODY_POSE_CONNECTIONS
 
 
-def front_leg(plane_x, plane_y, plane_z, left_foot, right_foot):
+def front_leg(plane_x: np.array,
+              plane_y: np.array,
+              plane_z: np.array,
+              left_foot: np.array,
+              right_foot: np.array) -> str:
     plane = np.array([plane_x, plane_y, plane_z])
 
     vect = plane[0:2] - plane[2]
@@ -21,7 +27,7 @@ def front_leg(plane_x, plane_y, plane_z, left_foot, right_foot):
         return 'RIGHT'
 
 
-def which_leg_front(df_test):
+def which_leg_front(df_test: pd.DataFrame) -> pd.DataFrame:
     df_test['forward'] = df_test.apply(
         lambda x: front_leg(x['LEFT_HIP'][0:3], x['RIGHT_HIP'][0:3], x['RIGHT_SHOULDER'][0:3],
                             x['LEFT_FOOT_INDEX'][0:3], x['RIGHT_FOOT_INDEX'][0:3]), axis=1)
@@ -31,7 +37,7 @@ def which_leg_front(df_test):
     return df_test
 
 
-def rename_columns(df, forward="LEFT"):
+def rename_columns(df: pd.DataFrame, forward: str = "LEFT") -> pd.DataFrame:
     assert forward in ("LEFT","RIGHT")
 
     if forward == "LEFT":
@@ -65,7 +71,7 @@ def warrior_pose_front_back(df_pose: pd.DataFrame):
     return df_corrected, df_corrected.columns[35:51]
 
 
-def create_pose_df():
+def create_pose_df() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     df_world = load_pickle(PICKLEDPATH, "pose_world_landmark_all_df.pickle")
     df_world = df_world.replace(to_replace='None', value=np.nan).dropna()
     df_world = df_world.reset_index(drop=True)
@@ -79,7 +85,7 @@ def create_pose_df():
     return df_w1, df_w2, df_dd
 
 
-def create_pose_np():
+def create_pose_np() -> pd.DataFrame:
     np_world = load_pickle(PICKLEDPATH, "pose_world_landmark_numpy.pickle")
     return np_world
 
@@ -100,11 +106,11 @@ def get_angle_confidence_intervals(df_pose: pd.DataFrame, LANDMARKS: list, perce
     return valid_angles
 
 
-def calc_2d_angles(vec_2d):
+def calc_2d_angles(vec_2d: np.array) -> np.array:
     return np.degrees(np.arctan2(vec_2d[1], vec_2d[0]))
 
 
-def calc_xyz_angles(vec):
+def calc_xyz_angles(vec: np.array) -> Tuple[np.array, np.array]:
     xy_points = vec[0:2]
     yz_points = vec[1:3]
 
@@ -114,7 +120,7 @@ def calc_xyz_angles(vec):
     return xy_angle, yz_angle
 
 
-def calc_xyz_dist(vec):
+def calc_xyz_dist(vec: np.array) -> Tuple[np.array, np.array]:
     xy_points = vec[0:2]
     yz_points = vec[1:3]
 
@@ -124,34 +130,35 @@ def calc_xyz_dist(vec):
     return xy_dist, yz_dist
 
 
-def calc_xyz_points(xy_angle, xy_dist, yz_angle, yz_dist):
+def calc_xyz_points(xy_angle: np.array, xy_dist: np.array, yz_angle: np.array, yz_dist: np.array) \
+        -> Tuple[np.array, np.array, np.array]:
     x, y1 = calc_2d_points(xy_angle, xy_dist)
     y2, z = calc_2d_points(yz_angle, yz_dist)
 
     return x, y1, z
 
 
-def calc_2d_points(angle, dist):
+def calc_2d_points(angle: np.array, dist: np.array) -> Tuple[np.array, np.array]:
     a = dist * np.cos(np.radians(angle))
     b = dist * np.sin(np.radians(angle))
     return a, b
 
 
-def get_annotated_img(indx):
+def get_annotated_img(indx: int) -> np.array:
     annotated_images = load_pickle(PICKLEDPATH, "annotated_images.pickle")
     annotated_images = [img for img in annotated_images if img is not None]
     return annotated_images[indx]
 
 
-def normalize_on_right_hip(keypoints):
+def normalize_on_right_hip(keypoints: np.array) -> np.array:
     RIGHT_HIP = 24
-
     keypoints = keypoints - np.tile(np.swapaxes(keypoints[:, RIGHT_HIP, :][np.newaxis, :], 0, 1),
                                     (1, keypoints.shape[1], 1))
     return keypoints
 
 
-def select_correct_closest_image(np_test, df):
+def select_correct_closest_image(np_test: np.array, df: pd.DataFrame)\
+        -> Tuple[np.array, int]:
     good_idx = df[df['quality'] == 1].index
     np_world = create_pose_np()
     np_good = np_world[good_idx]
@@ -166,7 +173,11 @@ def select_correct_closest_image(np_test, df):
     return ground_truth, ground_truth_indx
 
 
-def compare_two_figures(length_fig, angle_fig, img1, img2, plot=True):
+def compare_two_figures(length_fig: np.array,
+                        angle_fig: np.array,
+                        img1: np.array,
+                        img2: np.array,
+                        plot: bool = True):
     plot_image_grid([img1, img2], 2)
 
     xy_dist, yz_dist = calc_xyz_dist(length_fig.T)
@@ -174,18 +185,14 @@ def compare_two_figures(length_fig, angle_fig, img1, img2, plot=True):
 
     px, py, pz = calc_xyz_points(xy_angle, xy_dist, yz_angle, yz_dist)
     lx, ly, lz = length_fig.T[0], length_fig.T[1], length_fig.T[2]
-    angx, angy, angz = angle_fig.T[0], angle_fig.T[1], angle_fig.T[2]
 
     if plot:
         fig = plt.figure()
         ax = plt.axes(projection="3d")
         ax.scatter3D(px, py, pz)
         ax.scatter3D(lx, ly, lz)
-        # ax.scatter3D(angx, angy, angz)
         ax.view_init(elev=-50, azim=270)
-        # ax.plot(points[0],points[1],points[2],color = 'g')
         for i, j in BODY_POSE_CONNECTIONS:
             ax.plot([px[i], px[j]], [py[i], py[j]], [pz[i], pz[j]], color='b')
             ax.plot([lx[i], lx[j]], [ly[i], ly[j]], [lz[i], lz[j]], color='r')
-            # ax.plot([angx[i], angx[j]], [angy[i], angy[j]], [angz[i], angz[j]], color='g')
         plt.show()

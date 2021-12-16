@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from pose.utils import BODY_POSE_CONNECTIONS
+from pose.pose_utils import BODY_POSE_CONNECTIONS
 
 N_CLASSES = 3
 LATENT_DIM = 50

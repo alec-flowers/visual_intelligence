@@ -3,9 +3,9 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 
-from data.data import get_data
-from gan.gan_model import Generator, Discriminator
-from pose.utils import GOOD_POSES_PATH, CGAN_PATH
+from data.data_loading import get_data
+from gan.gan_models import Generator, Discriminator
+from pose.pose_utils import GOOD_POSES_PATH, CGAN_PATH
 
 adversarial_loss = nn.BCELoss()
 TRAIN_ON_GPU = False
