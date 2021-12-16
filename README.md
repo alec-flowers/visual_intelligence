@@ -47,6 +47,7 @@ If you are interested in rerunning the individual steps we display there, this i
 
 
 ## Run Parameters Explained
+TODO merge with run above
 For running a test you specify all the parameters in lists. We then take all the permutations of these parameters and run these sequentially.
 
 ```[Potential options listed in a list]```
@@ -88,19 +89,15 @@ Project
 |   |-- __init__.py
 |   |-- cGAN.py
 |   |-- cLimbGAN.py
-|   |-- cLimbGAN_convergence_analysis.py
 |   |-- gan_models.py
 |   |-- test_cGAN.py
 |   |-- test_cLimbGAN.py
 |-- notebooks -- |
 |   |-- __init__.py
-|   |-- baseline_models.ipynb
-|   |-- correction_decision_tree.ipynb
-|   |-- mediapipe_exploration.ipynb
 |   |-- pose_correction_pipeline.ipynb
 |-- pose -- |
 |   |-- __init__.py
-|   |-- baseline_correction.py
+|   |-- nearest_neighbor_correction.py
 |   |-- plot.py
 |   |-- pose_mediapipe.py
 |   |-- pose_utils.py
@@ -125,28 +122,25 @@ Project
 
 **Data**
 * `data_labeling.py`: use this file to label collected data
-* `data_loading.py`: 
-* `scraping.py`: classes for nodes; each one represents one agent in the decentralized network
-* `yoga_82_image_downloader.py`: for creating the plots
+* `data_loading.py`: manage datasets and dataloaders
+* `scraping.py`: scrape data from google with chrome
+* `yoga_82_image_downloader.py`: script to download the images of the Yoga.82 data set
 
 **GAN**
-* `cLimbGAN.py`: 
-* `cLimbGAN_convergence_analysis.py`: 
-* `gan_models.py`: 
-* `test_cGAN.py`: 
-* `test_cLimbGAN.py`: 
+* `cGAN.py`: GAN conditioned on the pose labels
+* `cLimbGAN.py`: GAN conditioned on the pose labels and limb lengths
+* `gan_models.py`: the generator and discriminator architectures
+* `test_cGAN.py`: generate poses with the cGAN
+* `test_cLimbGAN.py`: generate poses with the cLimbGAN
 
 **Notebooks**
-* `baseline_models.ipynb`:
-* `correction_decision_tree.ipynb`: 
-* `mediapipe_exploration.ipynb`: 
-* `pose_correction_pipeline.ipynb`: 
+* `pose_correction_pipeline.ipynb`: a showcase of our whole correction system
 
 **Pose**
-* `baseline_correction.py`: 
-* `plot.py`: 
-* `pose_mediapipe.py`: 
-* `pose_utils.py`: 
+* `nearest_neighbor_correction.py`: functions needed for the nearest neighbour correction
+* `plot.py`: functions needed to plot the image data and coordinate data
+* `pose_mediapipe.py`: extract the poses from raw image data with mediapipe
+* `pose_utils.py`: utilities needed for the pose extraction
 
 
 ## Authors

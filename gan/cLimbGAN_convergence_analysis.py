@@ -31,7 +31,6 @@ if __name__ == "__main__":
     columns = 4
     rows = 4
     OFFSET = 0
-    # ax enables access to manipulate each of subplots
     ax = []
     for i in range(OFFSET, OFFSET + columns * rows-1):
         img = image_list[i]
