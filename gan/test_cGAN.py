@@ -12,7 +12,6 @@ def generate_images(generator, labels, device):
     noise_vector = generate_noise(len(labels), 100, device=device)
     generator.eval()
     images = generator((noise_vector, labels))
-
     return images
 
 

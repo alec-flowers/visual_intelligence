@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from torch import nn
 
-from pose.utils import MODEL_PATH
+from pose.pose_utils import MODEL_PATH
 
 
 def train_model(model,

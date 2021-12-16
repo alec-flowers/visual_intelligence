@@ -8,7 +8,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 
-from pose.utils import load_pickle, PICKLEDPATH, TRAINPATH, calc_angle, LANDMARKS_ANGLES_DICT, DATAPATH, calc_limb_lengths
+from pose.pose_utils import load_pickle, PICKLEDPATH, TRAINPATH, calc_angle, LANDMARKS_ANGLES_DICT, DATAPATH, calc_limb_lengths
 
 IMG_EXTENSIONS = (".jpg", ".jpeg", ".png", ".ppm", ".bmp", ".pgm", ".tif", ".tiff", ".webp")
 
