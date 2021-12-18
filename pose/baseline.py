@@ -8,6 +8,17 @@ from pose.plot import plot_image_grid
 
 
 def front_leg(plane_x, plane_y, plane_z, left_foot, right_foot):
+    """
+    Given 3 points which form a plane, calculate a normal vector to the plane and then take the inner product to find
+    which point is more on one side than the other.
+
+    :param plane_x: 3D coordinate 1
+    :param plane_y: 3D coordinate 2
+    :param plane_z: 3D coordinate 3
+    :param left_foot: 3D coordinate to evaluate which side of the plane it is on
+    :param right_foot: 3D coordinate to evaluate which side of the plane it is on
+    :return:
+    """
     plane = np.array([plane_x, plane_y, plane_z])
 
     vect = plane[0:2] - plane[2]
@@ -22,6 +33,13 @@ def front_leg(plane_x, plane_y, plane_z, left_foot, right_foot):
 
 
 def which_leg_front(df_test):
+    """
+    Calculate which leg is in front for a single pose and change the angle names to FORWARD and BACKWARDS instead
+    of RIGHT and LEFT.
+
+    :param df_test: dataframe of keypoints and angles
+    :return: dataframe of keypoints with renamed angles
+    """
     df_test['forward'] = df_test.apply(
         lambda x: front_leg(x['LEFT_HIP'][0:3], x['RIGHT_HIP'][0:3], x['RIGHT_SHOULDER'][0:3],
                             x['LEFT_FOOT_INDEX'][0:3], x['RIGHT_FOOT_INDEX'][0:3]), axis=1)
@@ -32,6 +50,13 @@ def which_leg_front(df_test):
 
 
 def rename_columns(df, forward="LEFT"):
+    """
+    Rename the columns to FORWARD and BACKWARD instead of RIGHT and LEFT
+
+    :param df: dataframe of keypoints and angles to rename
+    :param forward: which foot is forward
+    :return: dataframe with renamed columns
+    """
     assert forward in ("LEFT","RIGHT")
 
     if forward == "LEFT":
@@ -52,6 +77,12 @@ def rename_columns(df, forward="LEFT"):
 
 
 def warrior_pose_front_back(df_pose: pd.DataFrame):
+    """
+    Calculate the front and back leg on an entire dataframe of poses and rename their columns.
+
+    :param df_pose: df of poses
+    :return: df pf poses with renamed columns
+    """
     df_pose['forward'] = df_pose.apply(
         lambda x: front_leg(x['LEFT_HIP'][0:3], x['RIGHT_HIP'][0:3], x['RIGHT_SHOULDER'][0:3],
                             x['LEFT_FOOT_INDEX'][0:3], x['RIGHT_FOOT_INDEX'][0:3]), axis=1)
@@ -66,6 +97,11 @@ def warrior_pose_front_back(df_pose: pd.DataFrame):
 
 
 def create_pose_df():
+    """
+    Load dataframe of poses and split by pose.
+
+    :return: split df by ground truth pose
+    """
     df_world = load_pickle(PICKLEDPATH, "pose_world_landmark_all_df.pickle")
     df_world = df_world.replace(to_replace='None', value=np.nan).dropna()
     df_world = df_world.reset_index(drop=True)
@@ -80,17 +116,30 @@ def create_pose_df():
 
 
 def create_pose_np():
+    """
+    Load in poses as a numpy array.
+
+    :return: numpy array of poses
+    """
     np_world = load_pickle(PICKLEDPATH, "pose_world_landmark_numpy.pickle")
     return np_world
 
 
-def get_angle_confidence_intervals(df_pose: pd.DataFrame, LANDMARKS: list, percent: float = .10) -> dict:
+def get_angle_confidence_intervals(df_pose: pd.DataFrame, angles: list, percent: float = .10) -> dict:
+    """
+    Calculate confidence intervals for a pose by looking at the distribution of angles.
+
+    :param df_pose: dataframe of poses
+    :param angles: names of the angles to do this calculation for
+    :param percent: percent of angles to be outside of a tail
+    :return: dict of angle names and their confidence intervals
+    """
     df_pose = df_pose.loc[df_pose['quality'] == 1]
     num = df_pose.shape[0]
     num_to_take = int(num - num * (1 - percent))
 
     valid_angles = {}
-    for idx, col in enumerate(LANDMARKS):
+    for idx, col in enumerate(angles):
         low = df_pose[col].sort_values(ascending=True).reset_index(drop=True)[num_to_take]
         median = df_pose[col].median()
         high = df_pose[col].sort_values(ascending=True).reset_index(drop=True)[num - num_to_take]
@@ -105,6 +154,13 @@ def calc_2d_angles(vec_2d):
 
 
 def calc_xyz_angles(vec):
+    """
+    Given a vector in 3D space. Take the (x,y) points and calculate the angle with the x axis. Take the (y, z) keypoints
+    and calculate the angle with respect to the y axis.
+
+    :param vec: point in 3D
+    :return: angle on the xy plane and the angle on the yz plane
+    """
     xy_points = vec[0:2]
     yz_points = vec[1:3]
 
@@ -115,6 +171,13 @@ def calc_xyz_angles(vec):
 
 
 def calc_xyz_dist(vec):
+    """
+    Given a vector in 3D space. Take the (x,y) points and calculate the length of the resulting 2D vector. Take the
+    (y, z) keypoints and calculate the length with the resulting 2D vector.
+
+    :param vec: point in 3D
+    :return: length of xy vector, length of yz vector
+    """
     xy_points = vec[0:2]
     yz_points = vec[1:3]
 
@@ -125,6 +188,15 @@ def calc_xyz_dist(vec):
 
 
 def calc_xyz_points(xy_angle, xy_dist, yz_angle, yz_dist):
+    """
+    Calculate the location of a 3D point,
+
+    :param xy_angle:
+    :param xy_dist:
+    :param yz_angle:
+    :param yz_dist:
+    :return: location of 3D point
+    """
     x, y1 = calc_2d_points(xy_angle, xy_dist)
     y2, z = calc_2d_points(yz_angle, yz_dist)
 
@@ -132,18 +204,37 @@ def calc_xyz_points(xy_angle, xy_dist, yz_angle, yz_dist):
 
 
 def calc_2d_points(angle, dist):
+    """
+    Given an angle and a length, calculate the location of the point in the 2D plane.
+
+    :param angle:
+    :param dist:
+    :return: (x, y) of a 2D point
+    """
     a = dist * np.cos(np.radians(angle))
     b = dist * np.sin(np.radians(angle))
     return a, b
 
 
 def get_annotated_img(indx):
+    """
+    Load and select an certain annotated image
+
+    :param indx: index of annotated image
+    :return: image
+    """
     annotated_images = load_pickle(PICKLEDPATH, "annotated_images.pickle")
     annotated_images = [img for img in annotated_images if img is not None]
     return annotated_images[indx]
 
 
 def normalize_on_right_hip(keypoints):
+    """
+    Set the right hip as (0, 0, 0) and normalize the other keypoints.
+
+    :param keypoints: keypoints to normalize
+    :return: normalized keypoints
+    """
     RIGHT_HIP = 24
 
     keypoints = keypoints - np.tile(np.swapaxes(keypoints[:, RIGHT_HIP, :][np.newaxis, :], 0, 1),
@@ -152,6 +243,14 @@ def normalize_on_right_hip(keypoints):
 
 
 def select_correct_closest_image(np_test, df):
+    """
+    Given a set of keypoints and a dataframe of poses. Find in the dataframe the pose that most closely matches the
+    keypoints in a euclidian distance sense.
+
+    :param np_test: set if keypoints for a certain pose
+    :param df: dataframe of keypoints
+    :return: keypoints of closest pose, index of closest pose
+    """
     good_idx = df[df['quality'] == 1].index
     np_world = create_pose_np()
     np_good = np_world[good_idx]
@@ -167,6 +266,18 @@ def select_correct_closest_image(np_test, df):
 
 
 def compare_two_figures(length_fig, angle_fig, img1, img2, plot=True):
+    """
+    Take two figures and their keypoints. For one of them calculate the lengths from the right hip to all the keypoints.
+    For the other calculate all the xy and yz angles from the right hip to the keypoints. Then combine these and
+    create a new pose that keeps the lengths from the first pose, but manipulates it to be in the right angle from the
+    second pose.
+
+    :param length_fig: keypoints of the figure to calculate the lengths from
+    :param angle_fig: keypoints of the figure to calculate the angles from
+    :param img1: annotated image of length_fig
+    :param img2: annotated image of angle_fig
+    :param plot: display 3D plot
+    """
     plot_image_grid([img1, img2], 2)
 
     xy_dist, yz_dist = calc_xyz_dist(length_fig.T)
