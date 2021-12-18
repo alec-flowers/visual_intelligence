@@ -24,6 +24,8 @@ CLIMBGAN_PATH = (MODEL_PATH / "cLimbGAN").absolute().resolve()
 assert (CLIMBGAN_PATH.exists())
 CGAN_PATH = (MODEL_PATH / "cGAN").absolute().resolve()
 assert (CGAN_PATH.exists())
+DECISION_TREE_PATH = (MODEL_PATH / "decision_tree").absolute().resolve()
+assert (DECISION_TREE_PATH.exists())
 
 NOISE_DIMENSION = 33*3
 
