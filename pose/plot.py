@@ -148,13 +148,14 @@ def plot_confusion_matrix(targets, predicted, title=None, save_plot=False):
     plt.show()
 
 
-def plot_3d_keypoints(x, y, z, elev=-50, azim=270):
+def plot_3d_keypoints(x, y, z, elev=-50, azim=270, version=1):
     fig = plt.figure()
     ax = plt.axes(projection="3d")
     ax.scatter3D(x, y, z)
     ax.view_init(elev=elev, azim=azim)
     for i,j in BODY_POSE_CONNECTIONS:
         ax.plot([x[i],x[j]], [y[i],y[j]], [z[i],z[j]], color='b')
+    plt.savefig(str(PLOT_PATH) + f"/generated_version_0{version}.png")
     plt.show()
 
 

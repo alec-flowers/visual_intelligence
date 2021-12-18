@@ -1,10 +1,10 @@
 ### CS-503 Visual Intelligence
 
-# One Shot Deep Motion Correction
+# 3D Pose Correction
 
 ---
 
-This repository provides a framework for correcting human motion, showcased on the example of yoga poses.
+We provide a framework for correcting 3D human poses, showcased on the example of yoga poses.
 
 [Accompanying Report](TODO INSERT LINK)
 
@@ -125,8 +125,8 @@ Project
 |   |-- cGAN.py
 |   |-- cLimbGAN.py
 |   |-- gan_models.py
-|   |-- test_cGAN.py
-|   |-- test_cLimbGAN.py
+|   |-- results_cGAN.py
+|   |-- results_cLimbGAN.py
 |-- notebooks -- |
 |   |-- __init__.py
 |   |-- pose_correction_pipeline.ipynb

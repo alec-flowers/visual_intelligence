@@ -54,14 +54,14 @@ def generate_coords_given_limb_lengths(limb_lengths: np.array,
     if plot:
         # Plot generated image given the original limb lengths
         coord = generated_coords.detach().numpy().squeeze(0)
-        plot_3d_keypoints(coord[:, 0], coord[:, 1], coord[:, 2], elev=-70, azim=270)
+        plot_3d_keypoints(coord[:, 0], coord[:, 1], coord[:, 2], elev=-70, azim=270, version=version)
     else:
         return generated_limb_lengths[0]
 
 
 def plot_limb_length_convergence(mean_differences: list):
     plt.plot(*zip(*mean_differences))
-    plt.title("Mean squared average deviation of generated from target limb lengths")
+    # plt.title("Mean squared average deviation of generated from target limb lengths")
     plt.xlabel("Training epoch")
     plt.ylabel("Mean squared average deviation")
     plt.ylim(0, 2)
@@ -70,11 +70,11 @@ def plot_limb_length_convergence(mean_differences: list):
 
 
 if __name__ == "__main__":
-    VERSION = 780
+    VERSION = 1092
     train_loader, _, train_coordinate_dataset, _ = get_data(batch_size=64, split_ratio=0.15, path=GOOD_POSES_PATH)
 
     # Plot generated images conditioned on label and limb length
-    for version in range(364, VERSION + 1, 52):
+    for version in range(104, VERSION + 1, 52):
         generate_coords_given_limb_lengths(calc_limb_lengths(train_coordinate_dataset.coordinates[0]),
                                            train_coordinate_dataset.labels[0],
                                            version=version,
