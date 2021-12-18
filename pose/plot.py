@@ -192,6 +192,6 @@ def plot_distribution_with_image(df, df_new, angles, LANDMARKS):
         high = angles[ang][2]
         current = df_new[ang][0]
         if current < low:
-            print(f"{ang} is to small by - {low - current:.1f} degrees")
+            print(f"{ang} is too small by - {low - current:.1f} degrees")
         elif current > high:
-            print(f"{ang} is to large by - {current - high:.1f} degrees")
+            print(f"{ang} is too large by - {current - high:.1f} degrees")
