@@ -258,3 +258,13 @@ data/train
 archiv/
 .DS_Store
 .DS_Store/
+
+tb_logs/
+scraping/
+saved_model/
+runs/
+plots/
+data/good_poses/
+data/pickled_data (copy)/
+data/pickled_DD
+improve_scraping.py

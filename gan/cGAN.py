@@ -3,9 +3,9 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 
-from data.data import get_data
-from gan.gan_model import Generator, Discriminator
-from pose.utils import GOOD_POSES_PATH
+from data.data_loading import get_data
+from gan.gan_models import Generator, Discriminator
+from pose.pose_utils import GOOD_POSES_PATH, CGAN_PATH
 
 adversarial_loss = nn.BCELoss()
 TRAIN_ON_GPU = False
@@ -31,7 +31,7 @@ def load_model(generator, discriminator, G_optimizer, D_optimizer, version, path
 
 
 def load_generator(generator, version, path):
-    checkpoint = torch.load(path + f'/model_after_epoch_{version}.pth')
+    checkpoint = torch.load(str(path) + f'/model_after_epoch_{version}.pth')
     generator.load_state_dict(checkpoint['generator'])
     return generator
 
@@ -57,8 +57,10 @@ def discriminator_loss(output, label):
     return disc_loss
 
 
-# custom weights initialization called on gen and disc model
 def weights_init(m):
+    """
+    Custom weights initialization called on generator and discriminator model
+    """
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
         torch.nn.init.normal_(m.weight, 0.0, 0.02)
@@ -92,7 +94,6 @@ if __name__ == "__main__":
     LATENT_DIM = 100
     N_CLASSES = 3
     start = None
-    c_GAN_path = "../saved_model/cGAN"
 
     # Set fixed random number seed
     torch.manual_seed(42)
@@ -110,7 +111,7 @@ if __name__ == "__main__":
     elif continue_training:
         start = version
         generator, discriminator, G_optimizer, D_optimizer = \
-            load_model(generator, discriminator, G_optimizer, D_optimizer, version, c_GAN_path)
+            load_model(generator, discriminator, G_optimizer, D_optimizer, version, CGAN_PATH)
 
     for epoch in range(start, NUM_EPOCHS + 1):
 

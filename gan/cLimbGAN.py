@@ -3,11 +3,11 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 
-from data.data import get_data
-from gan.gan_model import LimbLengthGenerator, LimbLengthDiscriminator
-from pose.utils import GOOD_POSES_PATH, NOISE_DIMENSION
+from data.data_loading import get_data
 from gan.cGAN import save_models, print_training_progress, get_device, generator_loss, \
     discriminator_loss, weights_init, generate_noise, load_model
+from gan.gan_models import LimbLengthGenerator, LimbLengthDiscriminator
+from pose.pose_utils import GOOD_POSES_PATH, NOISE_DIMENSION, CLIMBGAN_PATH
 
 adversarial_loss = nn.BCELoss()
 TRAIN_ON_GPU = False
@@ -33,7 +33,6 @@ if __name__ == "__main__":
     LATENT_DIM = 50
     N_CLASSES = 3
     start = None
-    c_limbGAN_path = "./saved_model/cLimbGAN"
 
     # Set fixed random number seed
     torch.manual_seed(42)
@@ -50,7 +49,7 @@ if __name__ == "__main__":
         discriminator.apply(weights_init)
     elif continue_training:
         generator, discriminator, G_optimizer, D_optimizer = \
-            load_model(generator, discriminator, G_optimizer, D_optimizer, version, c_limbGAN_path)
+            load_model(generator, discriminator, G_optimizer, D_optimizer, version, CLIMBGAN_PATH)
 
     for epoch in range(version, NUM_EPOCHS + 1):
 
@@ -91,7 +90,7 @@ if __name__ == "__main__":
 
         print_training_progress(epoch, G_loss, D_total_loss)
         if epoch % 52 == 0:
-            save_models(generator, discriminator, G_optimizer, D_optimizer, epoch, c_limbGAN_path)
+            save_models(generator, discriminator, G_optimizer, D_optimizer, epoch, CLIMBGAN_PATH)
 
-    save_models(generator, discriminator, G_optimizer, D_optimizer, NUM_EPOCHS, c_limbGAN_path)
+    save_models(generator, discriminator, G_optimizer, D_optimizer, NUM_EPOCHS, CLIMBGAN_PATH)
     print(f'Finished!')

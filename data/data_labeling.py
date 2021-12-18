@@ -5,16 +5,15 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from shutil import copy2
 
-# allowed inputs
+# Allowed inputs
 VALID_INPUTS = ['b', 'g', 'e', 'u', 'd']
-# directories where files will be saved according to selection
+# Directories where files will be saved according to selection
 GOOD_DIR = '1_'
 BAD_DIR = '0_'
 UNSURE_DIR = '2_'
 
 
 def main(args):
-    # init
     print('Image labeling')
     print('Init...')
     print('Creating folder structure...')
@@ -48,10 +47,6 @@ def create_struct(trg_dir, pose):
     Creates directory structure where labeled images will be saved.
     :param trg_dir: directory under which structure will be created
     """
-    # try:
-    #     os.mkdir(trg_dir + pose)
-    # except FileExistsError as e:
-    #     pass
     try:
         os.mkdir(os.path.join(trg_dir, GOOD_DIR + pose))
     except FileExistsError as e:
@@ -118,5 +113,4 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    # args = argparse.Namespace(s="Good Yoga/Downward-Facing_Dog_pose_or_Adho_Mukha_Svanasana_", t="test")
     main(args)

@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 from matplotlib import pyplot as plt
 
-from pose.utils import PLOT_PATH
+from pose.pose_utils import PLOT_PATH
 
 
 def import_images():
@@ -31,7 +31,6 @@ if __name__ == "__main__":
     columns = 4
     rows = 4
     OFFSET = 0
-    # ax enables access to manipulate each of subplots
     ax = []
     for i in range(OFFSET, OFFSET + columns * rows-1):
         img = image_list[i]
