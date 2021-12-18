@@ -1,3 +1,5 @@
+import argparse
+
 import numpy as np
 import torch
 from pytorch_lightning.callbacks import ModelCheckpoint
@@ -13,7 +15,7 @@ from pose.plot import plot_classified_images, plot_confusion_matrix
 from pose.pose_utils import MODEL_PATH, PICKLEDPATH
 
 
-def classify_image(coordinates, reshape_inputs=True):
+def classify_image(coordinates, reshape_inputs: bool = True):
     if reshape_inputs:
         input = torch.from_numpy(coordinates)
         input = input.view(input.size(0), -1).float()
@@ -40,22 +42,39 @@ def classify_image(coordinates, reshape_inputs=True):
         return predicted_class
 
 
-if __name__ == "__main__":
-    # Define general parameters
-    save_plot = False
-    train_from_scratch = True
-    visualize_results = True
-    min_valid_loss = np.inf
-    split_ratio = 0.8
+def parse_args():
+    parser = argparse.ArgumentParser(description='Pose classification.')
+    parser.add_argument("-pickles", type=str,
+                        required=False, default=PICKLEDPATH,
+                        help="Path to load the pickled dataframes from the pose estimation from.")
+    parser.add_argument("-scratch", type=bool, default=False,
+                        help="Train the classifier from scratch or load a previously trained model.")
+    parser.add_argument("-version", type=str,
+                        required=False, default="2021_12_10_10_42_37.ckpt",
+                        help="If you don't train from scratch, specify the model version to be resumed for training.")
+    parser.add_argument("-save", type=str,
+                        required=False, default=MODEL_PATH,
+                        help="Path to save and load the trained model to/ from.")
+    parser.add_argument("-epochs", type=int,
+                        required=False, default=100,
+                        help="How many epochs to train the model for.")
+    parser.add_argument("-viz", type=bool,
+                        required=False, default=True,
+                        help="Visualize confusion matrices of the classifier and "
+                             "correctly and incorrectly classified images.")
 
-    # Model parameters
+    return parser.parse_args()
+
+
+def main(args):
+    # Define parameters
+    split_ratio = 0.8
     batch_size = 64
-    epochs = 100
 
     writer = SummaryWriter('runs/mlp/')
 
     train_loader, val_loader, train_coordinate_dataset, val_coordinate_dataset = \
-        get_data(batch_size, split_ratio, PICKLEDPATH)
+        get_data(batch_size, split_ratio, args.pickles)
 
     # Configure the training logging
     logger = TensorBoardLogger("tb_logs", name="mlp")
@@ -71,43 +90,50 @@ if __name__ == "__main__":
     loss_function = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(mlp.parameters(), lr=1e-4)
 
-    if train_from_scratch:
-        train_model(mlp, train_loader, val_loader, loss_function, optimizer, epochs, writer, save_model=True)
+    if args.scratch:
+        train_model(mlp, train_loader, val_loader, loss_function, optimizer, args.epochs, writer, args.save)
 
     else:
         # Load a previously trained model
-        model_version = "2021_12_10_10_42_37.ckpt"
-        checkpoint = torch.load(str(MODEL_PATH) + "/mlp/" + model_version)
+        checkpoint = torch.load(str(args.save) + "/mlp/" + args.version)
         mlp.load_state_dict(checkpoint['model_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-    annotated_images_filtered = get_not_none_annotated_images()
-    annotated_images_filtered = \
-        np.array(annotated_images_filtered, dtype=object)[train_coordinate_dataset.index_order]
+    annotated_images_filtered = get_not_none_annotated_images(args.pickles)
+    if annotated_images_filtered:
+        annotated_images_filtered = \
+            np.array(annotated_images_filtered, dtype=object)[train_coordinate_dataset.index_order]
 
     targets_train, predicted_class_train = evaluate_model(mlp, train_coordinate_dataset, reshape_inputs=True)
     targets_val, predicted_class_val = evaluate_model(mlp, val_coordinate_dataset, reshape_inputs=True)
 
-    if visualize_results:
+    if args.viz:
         # Confusion matrix
-        plot_confusion_matrix(targets_val, predicted_class_val, 'validation', save_plot=save_plot)
-        plot_confusion_matrix(targets_train, predicted_class_train, 'training', save_plot=save_plot)
+        plot_confusion_matrix(targets_val, predicted_class_val, 'validation', save_plot=False)
+        plot_confusion_matrix(targets_train, predicted_class_train, 'training', save_plot=False)
 
-        # Plot misclassified train images
-        plot_classified_images(targets_train, predicted_class_train, annotated_images_filtered,
-                               type_="training", max_n_to_plot=16, classified="misclassified", split_ratio=split_ratio)
-        # Plot correctly train classified
-        plot_classified_images(targets_train, predicted_class_train, annotated_images_filtered,
-                               type_="training", max_n_to_plot=16, classified="correctly classified", split_ratio=split_ratio)
+        if annotated_images_filtered is not None:
+            # Plot misclassified train images
+            plot_classified_images(targets_train, predicted_class_train, annotated_images_filtered,
+                                   type_="training", max_n_to_plot=16, classified="misclassified", split_ratio=split_ratio)
+            # Plot correctly train classified
+            plot_classified_images(targets_train, predicted_class_train, annotated_images_filtered,
+                                   type_="training", max_n_to_plot=16, classified="correctly classified", split_ratio=split_ratio)
 
-        # Plot misclassified test images
-        plot_classified_images(targets_val, predicted_class_val, annotated_images_filtered,
-                               type_="validation", max_n_to_plot=16, classified="misclassified", split_ratio=split_ratio)
+            # Plot misclassified test images
+            plot_classified_images(targets_val, predicted_class_val, annotated_images_filtered,
+                                   type_="validation", max_n_to_plot=16, classified="misclassified", split_ratio=split_ratio)
 
-        # Plot correctly test classified
-        plot_classified_images(targets_val, predicted_class_val, annotated_images_filtered,
-                               type_="validation", max_n_to_plot=16, classified="correctly classified",
-                               split_ratio=split_ratio)
+            # Plot correctly test classified
+            plot_classified_images(targets_val, predicted_class_val, annotated_images_filtered,
+                                   type_="validation", max_n_to_plot=16, classified="correctly classified",
+                                   split_ratio=split_ratio)
 
     # INSPECT training
     # run in terminal: tensorboard --logdir=runs
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    main(args)
+

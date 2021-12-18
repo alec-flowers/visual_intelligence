@@ -42,7 +42,7 @@ if __name__ == "__main__":
     optimizer = torch.optim.Adam(cnn.parameters(), lr=1e-4)
 
     if train_from_scratch:
-        train_model(cnn, train_loader, val_loader, loss_function, optimizer, epochs, writer, save_model, mlp=False)
+        train_model(cnn, train_loader, val_loader, loss_function, optimizer, epochs, writer, MODEL_PATH, mlp=False)
     else:
         # Load a previously trained model that has the following stats:
         # Average training after epoch    10| Loss: 0.182 | Acc: 0.926

@@ -1,19 +1,21 @@
+import argparse
 import os
 import sys
+from typing import Tuple, Any, NamedTuple
 
 import cv2
 import mediapipe as mp
+import mediapipe.python.solution_base
+import numpy as np
 import pandas as pd
+import torch
 from tqdm import tqdm
 
-from data.data_loading import load_data
-from pose.plot import *
-from pose.pose_utils import LANDMARK_DICT, load_pickle, CLASS_MAPPINGS_IDX, POSE_QUALITY_MAPPINGS
-from pose.pose_utils import TRAINPATH, PICKLEDPATH, save_dataframes_to_pickle, \
+from data.data_loading import load_data, ClassifyDataset
+from pose.plot import plot_image, plot_dataset_images, plot_annotated_images, plot_no_pose_photo
+from pose.pose_utils import LANDMARK_DICT, CLASS_MAPPINGS_IDX, POSE_QUALITY_MAPPINGS, TRAINPATH
+from pose.pose_utils import PICKLEDPATH, save_dataframes_to_pickle, \
     POSEDATAFRAME_LIST
-
-# from plot import *
-
 
 module_path = os.path.abspath(os.path.join('../..'))
 if module_path not in sys.path:
@@ -24,7 +26,10 @@ mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
 
 
-def poses_for_dataset(dataloader, skip_image_annotation: bool = False):
+def poses_for_dataset(dataloader: torch.utils.data.dataloader.DataLoader,
+                      skip_image_annotation:
+                      bool = False) \
+        -> Tuple[list, list]:
     assert dataloader.batch_size is None
     result_list = []
     annotated_images = []
@@ -35,7 +40,11 @@ def poses_for_dataset(dataloader, skip_image_annotation: bool = False):
     return result_list, annotated_images
 
 
-def estimate_poses(image, label, skip_image_annotation, plot=False):
+def estimate_poses(image: torch.Tensor,
+                   label: torch.Tensor,
+                   skip_image_annotation: bool,
+                   plot: bool = False)\
+        -> Tuple[NamedTuple, Any]:
     with mp_pose.Pose(
             static_image_mode=True,
             model_complexity=2,
@@ -72,7 +81,9 @@ def estimate_poses(image, label, skip_image_annotation, plot=False):
     return results, annotated_image
 
 
-def pose_landmarks_to_list(solution, pose_var):
+def pose_landmarks_to_list(solution: mediapipe.python.solution_base.SolutionBase,
+                           pose_var: str) \
+        -> Tuple[list, list, list]:
     val = []
     visib = []
     nump = []
@@ -88,7 +99,10 @@ def pose_landmarks_to_list(solution, pose_var):
     return val, visib, nump
 
 
-def pose_to_dataframe(estimated_poses, dataset, pose_var):
+def pose_to_dataframe(estimated_poses: list,
+                      dataset: ClassifyDataset,
+                      pose_var: str) \
+        -> Tuple[pd.DataFrame, pd.DataFrame, np.array, np.array]:
     all_val = []
     visib_val = []
     for_numpy = []
@@ -127,44 +141,47 @@ def pose_to_dataframe(estimated_poses, dataset, pose_var):
     return df, df_vis, np.array(for_numpy), labels_drop_na
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Pose estimation.')
+    parser.add_argument("-path", type=str,
+                        required=False, default=TRAINPATH,
+                        help="Path to the images where you want to extract poses from.")
+    parser.add_argument("-save", type=str,
+                        required=False, default=PICKLEDPATH,
+                        help="Path to save the estimated poses and extracted dataframes to.")
+    parser.add_argument("-viz", type=bool,
+                        required=False, default=True,
+                        help="Visualize some of the estimated poses.")
+    parser.add_argument("-skip", type=bool,
+                        required=False, default=False,
+                        help="Skip saving the annotated images, because they take a lot of memory.")
+    return parser.parse_args()
+
+
+def main(args):
+    dataset, dataloader = load_data(path=args.path, batch_size=None, shuffle=False)
+
+    # Pose estimation
+    estimated_poses, annotated_images = poses_for_dataset(dataloader, skip_image_annotation=args.skip)
+
+    df, df_vis, numpy_data, labels_drop_na = \
+        pose_to_dataframe(estimated_poses, dataset, pose_var='pose_landmarks')
+    df_world, df_vis_world, numpy_data_world, _ = \
+        pose_to_dataframe(estimated_poses, dataset, pose_var='pose_world_landmarks')
+
+    save_dataframes_to_pickle(args.save,
+                              [df, df_vis, numpy_data, df_world, df_vis_world, numpy_data_world,
+                               labels_drop_na, annotated_images],
+                              POSEDATAFRAME_LIST
+                              )
+
+    if args.viz:
+        plot_dataset_images(dataset, 9)
+        plot_no_pose_photo(df, dataset, 9)
+        if not args.skip:
+            plot_annotated_images(annotated_images, 9)
+
+
 if __name__ == "__main__":
-    # Define parameters
-    shuffle = False
-    run_from_scratch = False
-    save_poses = True  # Save poses after estimated?
-
-    # Load the data
-    dataset, dataloader = load_data(path=TRAINPATH, batch_size=None, shuffle=shuffle)
-
-    if run_from_scratch:
-        # Pose estimation
-        estimated_poses, annotated_images = poses_for_dataset(dataloader, skip_image_annotation=True)
-
-        df, df_vis, numpy_data, labels_drop_na = pose_to_dataframe(estimated_poses, dataset, pose_var='pose_landmarks')
-        df_world, df_vis_world, numpy_data_world, _ = pose_to_dataframe(estimated_poses, dataset,
-                                                                        pose_var='pose_world_landmarks')
-        if save_poses:
-            save_dataframes_to_pickle(PICKLEDPATH,
-                                      [df, df_vis, numpy_data, df_world, df_vis_world, numpy_data_world,
-                                       labels_drop_na, annotated_images],
-                                      POSEDATAFRAME_LIST
-                                      )
-    else:
-        df = load_pickle(PICKLEDPATH, "pose_landmark_all_df.pickle")
-        df_vis = load_pickle(PICKLEDPATH, "pose_landmark_vis_df.pickle")
-        numpy_data = load_pickle(PICKLEDPATH, "pose_landmark_numpy.pickle")
-        df_world = load_pickle(PICKLEDPATH, "pose_world_landmark_all_df.pickle")
-        df_vis_world = load_pickle(PICKLEDPATH, "pose_world_landmark_vis_df.pickle")
-
-        annotated_images = load_pickle(PICKLEDPATH, "annotated_images.pickle")
-
-        # plot_dataset_images(dataset, 9)
-        # plot_annotated_images(annotated_images, 16)
-        # plot_no_pose_photo(df, dataset, 9)
-
-        print(f"There are {sum(df['NOSE'].isna())} images we don't get a pose estimate for out \
-        of {len(dataset)}. This is {sum(df['NOSE'].isna()) / len(dataset) * 100:.2f}%")
-
-        df_vis = df_vis.dropna(axis=0, how='any')
-        print(df_vis.describe())
-        df_vis.mean().sort_values(ascending=False)
+    args = parse_args()
+    main(args)

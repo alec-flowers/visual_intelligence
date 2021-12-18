@@ -14,7 +14,7 @@ def train_model(model,
                 optimizer: torch.optim.Adam,
                 epochs: int,
                 writer: torch.utils.tensorboard.writer.SummaryWriter,
-                save_model: bool,
+                model_path: str = MODEL_PATH,
                 mlp: bool = True):
     """
     Train an MLP or CNN model with some data and validate the training process after each epoch.
@@ -33,8 +33,8 @@ def train_model(model,
     :type epochs: int
     :param writer: log the training process
     :type writer: torch.utils.tensorboard.writer.SummaryWriter
-    :param save_model: whether we want to save the trained model
-    :type save_model: bool
+    :param model_path: path to save the trained model
+    :type model_path: str
     :param mlp: whether we train the MLP or the CNN
     :type mlp: bool
     """
@@ -94,12 +94,12 @@ def train_model(model,
         writer.add_scalar('validation accuracy',
                           valid_acc / len(val_loader.dataset),
                           epoch)
-        if save_model:
-            if min_valid_loss > valid_loss:
-                print(f'Validation Loss Decreased. Saving The Model...')
-                min_valid_loss = valid_loss
-                torch.save({'model_state_dict': model.state_dict(), 'optimizer_state_dict': optimizer.state_dict()},
-                           str(MODEL_PATH) + f"/model_intermediate.ckpt")
+
+        if min_valid_loss > valid_loss:
+            print(f'Validation Loss Decreased. Saving The Model...')
+            min_valid_loss = valid_loss
+            torch.save({'model_state_dict': model.state_dict(), 'optimizer_state_dict': optimizer.state_dict()},
+                       str(model_path) + f"/model_intermediate.ckpt")
 
         # Print statistics after every epoch
         print('Average training after epoch   %3d| Loss: %.3f | Acc: %.3f ' %
@@ -107,8 +107,8 @@ def train_model(model,
         print('Average validation after epoch %3d| Loss: %.3f | Acc: %.3f' %
               (epoch + 1, valid_loss / len(val_loader), valid_acc / len(val_loader.dataset)))
     print('Training process has finished.')
-    if save_model:
-        now = datetime.datetime.now()
-        model_type = '/mlp' if mlp else '/classifier'
-        torch.save({'model_state_dict': model.state_dict(), 'optimizer_state_dict': optimizer.state_dict()},
-                   str(MODEL_PATH) + model_type+f"/{now.strftime('%Y_%m_%d_%H_%M_%S')}.ckpt")
+
+    now = datetime.datetime.now()
+    model_type = '/mlp' if mlp else '/classifier'
+    torch.save({'model_state_dict': model.state_dict(), 'optimizer_state_dict': optimizer.state_dict()},
+               str(model_path) + model_type+f"/{now.strftime('%Y_%m_%d_%H_%M_%S')}.ckpt")

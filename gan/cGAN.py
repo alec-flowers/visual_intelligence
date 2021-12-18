@@ -18,11 +18,11 @@ def save_models(generator, discriminator, G_optimizer, D_optimizer, epoch, path)
         'discriminator': discriminator.state_dict(),
         'G_optimizer': G_optimizer.state_dict(),
         'D_optimizer': D_optimizer.state_dict(),
-    }, path + f'/model_after_epoch_{epoch}.pth')
+    }, str(path) + f'/model_after_epoch_{epoch}.pth')
 
 
 def load_model(generator, discriminator, G_optimizer, D_optimizer, version, path):
-    checkpoint = torch.load(path + f'/model_after_epoch_{version}.pth')
+    checkpoint = torch.load(str(path) + f'/model_after_epoch_{version}.pth')
     generator.load_state_dict(checkpoint['generator'])
     discriminator.load_state_dict(checkpoint['discriminator'])
     G_optimizer.load_state_dict(checkpoint['G_optimizer'])

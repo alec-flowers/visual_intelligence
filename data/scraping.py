@@ -12,16 +12,20 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 from pose.pose_utils import save_pickle, load_pickle
 
-# SOURCE AND HOW TO INSTALL DEPENDENCIES ON LINUX
-# Source Read: https://ladvien.com/scraping-internet-for-magic-symbols/
-# Source YouTube: https://www.youtube.com/watch?v=Yt6Gay8nuy0
+"""
+SOURCE AND HOW TO INSTALL DEPENDENCIES ON LINUX
+Source Read: https://ladvien.com/scraping-internet-for-magic-symbols/
+Source YouTube: https://www.youtube.com/watch?v=Yt6Gay8nuy0
 
-# Steps for installation:
-#     Install Google Chrome (skip if its already installed)
-#     Identify your Chrome version. Typically found by clicking About Google Chrome. I currently have version 77.0.3865.90 (my main version is thus 77, the number before the first dot).
-#     Download the corresponding ChromeDriver from here for your main version and put the executable into an accessible location (I use Desktop/Scraping)
-#     Install the Python Selenium package via pip install selenium
-#
+Steps for installation:
+    Install Google Chrome (skip if its already installed)
+    Identify your Chrome version. Typically found by clicking About Google Chrome. 
+    I currently have version 77.0.3865.90 (my main version is thus 77, the number before the first dot).
+    Download the corresponding ChromeDriver from here for your main version and put the executable into an 
+    accessible location (I use Desktop/Scraping).
+    Install the Python Selenium package via pip install selenium.
+"""
+
 DUPLICATES = "duplicates.pickle"
 
 
@@ -151,7 +155,6 @@ def scrape_images(search_path: str, out_path: str, max_n_downloads: int, keyword
 
         except:
             print("Couldn't download an image %s, continuing downloading the next one" % (i))
-
 
 
 def parse_args():

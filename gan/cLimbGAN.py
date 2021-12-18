@@ -1,3 +1,5 @@
+import argparse
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -9,49 +11,52 @@ from gan.cGAN import save_models, print_training_progress, get_device, generator
 from gan.gan_models import LimbLengthGenerator, LimbLengthDiscriminator
 from pose.pose_utils import GOOD_POSES_PATH, NOISE_DIMENSION, CLIMBGAN_PATH
 
-adversarial_loss = nn.BCELoss()
-TRAIN_ON_GPU = False
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='cLimbGAN correction.')
+    parser.add_argument("-data", type=str,
+                        required=False, default=GOOD_POSES_PATH,
+                        help="Path to the good poses that we want to train the cLimbGAN on.")
+    parser.add_argument("-path", type=str,
+                        required=False, default=CLIMBGAN_PATH,
+                        help="Path to load and save the model from.")
+    parser.add_argument("-scratch", type=bool, default=False,
+                        help="Train the GAN from scratch or resume training a previous model.")
+    parser.add_argument("-version", type=int,
+                        required=False, default=780,
+                        help="If you don't train from scratch, specify the model version to be resumed for training.")
+    parser.add_argument("-epochs", type=int,
+                        required=False, default=1000,
+                        help="How many epochs to train the model for.")
+
+    return parser.parse_args()
 
 
-if __name__ == "__main__":
+def main(args):
     # Model parameters
     batch_size = 64
-    NUM_EPOCHS = 1000
     learning_rate = 0.0002
-    shuffle = True
     split_ratio = 1
-    save_generated_images = False
-    TRAIN_ON_GPU = True
-    PRINT_STATS_AFTER_BATCH = 39
-
-    train_from_scratch = False
-    continue_training = True
-    version = 520
     device = get_device()
-
-    num_examples_to_generate = 10
-    LATENT_DIM = 50
-    N_CLASSES = 3
-    start = None
 
     # Set fixed random number seed
     torch.manual_seed(42)
 
-    train_loader, _, train_coordinate_dataset, _ = get_data(batch_size, split_ratio, path=GOOD_POSES_PATH)
+    train_loader, _, train_coordinate_dataset, _ = get_data(batch_size, split_ratio, path=args.data)
     generator = LimbLengthGenerator().to(device)
     discriminator = LimbLengthDiscriminator().to(device)
     G_optimizer = optim.Adam(generator.parameters(), lr=learning_rate, betas=(0.5, 0.999))
     D_optimizer = optim.Adam(discriminator.parameters(), lr=learning_rate, betas=(0.5, 0.999))
 
-    if train_from_scratch:
-        version = 1
+    if args.scratch:
+        args.version = 1
         generator.apply(weights_init)
         discriminator.apply(weights_init)
-    elif continue_training:
+    else:
         generator, discriminator, G_optimizer, D_optimizer = \
-            load_model(generator, discriminator, G_optimizer, D_optimizer, version, CLIMBGAN_PATH)
+            load_model(generator, discriminator, G_optimizer, D_optimizer, args.version, args.path)
 
-    for epoch in range(version, NUM_EPOCHS + 1):
+    for epoch in range(args.version, args.version + args.epochs + 1):
 
         D_loss_list, G_loss_list = [], []
         G_loss, D_total_loss = None, None
@@ -90,7 +95,11 @@ if __name__ == "__main__":
 
         print_training_progress(epoch, G_loss, D_total_loss)
         if epoch % 52 == 0:
-            save_models(generator, discriminator, G_optimizer, D_optimizer, epoch, CLIMBGAN_PATH)
+            save_models(generator, discriminator, G_optimizer, D_optimizer, epoch, args.path)
 
-    save_models(generator, discriminator, G_optimizer, D_optimizer, NUM_EPOCHS, CLIMBGAN_PATH)
-    print(f'Finished!')
+    save_models(generator, discriminator, G_optimizer, D_optimizer, NUM_EPOCHS, args.path)
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    main(args)
