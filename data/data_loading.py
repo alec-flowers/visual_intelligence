@@ -182,7 +182,7 @@ def train_val_split(images: torch.Tensor,
     return train_dataloader, val_loader, train_dataset, val_dataset
 
 
-def get_not_none_annotated_images(path=PICKLEDPATH) -> list:
+def get_not_none_annotated_images(path: str = PICKLEDPATH) -> list:
     """
     Not all the images have a corresponding pose estimate.
     In order to plot the data, we need to filter out these images.
