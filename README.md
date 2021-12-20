@@ -39,7 +39,6 @@ to
 
 Then run the script with the following arguments:
 
-
 ```bash
 -p "link to google image search" (str)
 -k "web search keyword used to look up images"  (str)
@@ -80,13 +79,15 @@ It takes the following arguments:
 There are defaults set for every argument, so it aligns with the rest of our pipeline.
 
 ### The good - bad pose classification
+TODO
 
 ### The pose correction
-We have developed three approaches to correct a misclassified image.
+We have developed three approaches to correct a misclassified image. 
+Here we describe how to run them with our code base.
 #### The Learned Angle Distribution correction
-
+TODO
 #### The Nearest Neighbour correction
-
+TODO
 
 #### The Generative cLimbGAN correction
 To train our cLimbGAN or resume training of your current version of the model, 
@@ -132,6 +133,7 @@ Project
 |   |-- pose_correction_pipeline.ipynb
 |-- pose -- |
 |   |-- __init__.py
+|   |-- decision_tree.py
 |   |-- nearest_neighbor_correction.py
 |   |-- plot.py
 |   |-- pose_mediapipe.py
@@ -172,6 +174,7 @@ Project
 * `pose_correction_pipeline.ipynb`: a showcase of our whole correction system
 
 **Pose**
+* `decision_tree.py`: functions needed for creating a decision tree for good/ bad pose execution
 * `nearest_neighbor_correction.py`: functions needed for the nearest neighbour correction
 * `plot.py`: functions needed to plot the image data and coordinate data
 * `pose_mediapipe.py`: extract the poses from raw image data with mediapipe
