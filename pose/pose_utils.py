@@ -3,6 +3,7 @@ import pathlib
 import pickle
 
 import numpy as np
+import pandas as pd
 
 REPO_ROOT = pathlib.Path(__file__).absolute().parents[1].resolve()
 assert (REPO_ROOT.exists())
@@ -162,7 +163,7 @@ def load_pickle(path, file):
     return data
 
 
-def save_dataframes_to_pickle(path, dataframes, filenames):
+def save_dataframes_to_pickle(path: str, dataframes: pd.DataFrame, filenames: list):
     assert len(dataframes) == len(filenames)
     for i in range(len(dataframes)):
         save_pickle(dataframes[i], path, filenames[i])
@@ -203,7 +204,7 @@ def calc_angle(lm_1, lm_2, lm_3, ref=np.array([0,1,0])):
     return angle
 
 
-def euclidian_distance(x1, x2):
+def euclidian_distance(x1: np.array, x2: np.array):
     return np.linalg.norm(x1 - x2)
 
 

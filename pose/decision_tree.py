@@ -1,3 +1,4 @@
+import pandas as pd
 from sklearn import tree
 import numpy as np
 from data.data_loading import create_angle_features
@@ -36,7 +37,7 @@ def train_decision_tree(pose: str):
         pickle.dump(clf, f)
 
 
-def decision_tree_correct(df_pose, pose: str):
+def decision_tree_correct(df_pose: pd.DataFrame, pose: str):
     """
     Classifies the passed pose as good or bad and and gives back corrections determined by decision tree.
     :param pose: Pose to correct
