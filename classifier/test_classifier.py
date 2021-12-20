@@ -1,14 +1,18 @@
+from typing import Tuple
+
 import numpy as np
 import torch
+from torch import nn
 
 from data.data_loading import CoordinatesDataset
 
 
-def evaluate_model(model, dataset: CoordinatesDataset, reshape_inputs: bool = False):
+def evaluate_model(model: nn.Module, dataset: CoordinatesDataset, reshape_inputs: bool = False) \
+        -> Tuple[torch.Tensor, torch.Tensor]:
     """
     Make predictions with the trained model.
     :param model: the MLP or CNN model
-    :type model:
+    :type model: nn.Module
     :param dataset: the data to make predictions on
     :type dataset: CoordinatesDataset
     :param reshape_inputs: for the MLP we need to reshape the input format

@@ -7,7 +7,7 @@ from torch import nn
 from pose.pose_utils import MODEL_PATH
 
 
-def train_model(model,
+def train_model(model: nn.Module,
                 train_loader: torch.utils.data.dataloader.DataLoader,
                 val_loader: torch.utils.data.dataloader.DataLoader,
                 loss_function: nn.CrossEntropyLoss,
@@ -20,7 +20,7 @@ def train_model(model,
     Train an MLP or CNN model with some data and validate the training process after each epoch.
 
     :param model: A model from our model.py file
-    :type model: MLP or CNN
+    :type model: MLP or CNN, nn.Module
     :param train_loader: the training data
     :type train_loader: torch.utils.data.dataloader.DataLoader
     :param val_loader: the validation data

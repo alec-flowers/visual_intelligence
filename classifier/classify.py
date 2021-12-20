@@ -15,19 +15,15 @@ from pose.plot import plot_classified_images, plot_confusion_matrix
 from pose.pose_utils import MODEL_PATH, PICKLEDPATH
 
 
-def classify_image(coordinates, reshape_inputs: bool = True):
+def classify_image(coordinates: np.array, reshape_inputs: bool = True) -> np.array:
     if reshape_inputs:
         input = torch.from_numpy(coordinates)
         input = input.view(input.size(0), -1).float()
 
-    # Set fixed random number seed
     torch.manual_seed(42)
 
-    # Initialize the MLP
     mlp = MLP(num_classes=3)
 
-    # Define the loss function and optimizer
-    # loss_function = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(mlp.parameters(), lr=1e-4)
 
     checkpoint = torch.load(str(MODEL_PATH) + "/mlp"+"/2021_11_22_20_46_21.ckpt")
@@ -36,7 +32,6 @@ def classify_image(coordinates, reshape_inputs: bool = True):
 
     mlp.eval()
     with torch.no_grad():
-        # Predict training data
         prediction = mlp(input)
         predicted_class = np.argmax(prediction, axis=1)
         return predicted_class
@@ -80,13 +75,10 @@ def main(args):
     logger = TensorBoardLogger("tb_logs", name="mlp")
     checkpoint_callback = ModelCheckpoint(monitor="train_loss", dirpath="saved_model/mlp/")
 
-    # Set fixed random number seed
     torch.manual_seed(42)
 
-    # Initialize the MLP
     mlp = MLP(num_classes=3)
 
-    # Define the loss function and optimizer
     loss_function = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(mlp.parameters(), lr=1e-4)
 
