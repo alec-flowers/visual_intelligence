@@ -1,14 +1,18 @@
 import math
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import seaborn as sns
+import torch
 from sklearn.metrics import confusion_matrix
 
+from data.data_loading import ClassifyDataset
 from pose.pose_utils import PLOT_PATH, BODY_POSE_CONNECTIONS
 
 
-def plot_image(image, dataloader=False, label=None, title=''):
+def plot_image(image: np.array, dataloader: bool = False, label: bool = None, title: str = ''):
     if dataloader:
         image = image.numpy().transpose((1, 2, 0))
     plt.xticks([])
@@ -21,7 +25,8 @@ def plot_image(image, dataloader=False, label=None, title=''):
     plt.show()
 
 
-def plot_image_grid(images, n_images, dataloader=False, title="", subplot_title=[]):
+def plot_image_grid(images: np.array, n_images: int, dataloader: bool = False, title: str = "",
+                    subplot_title: list =[]):
     for i in range(n_images):
         if dataloader:
             image = images[i].numpy().transpose((1, 2, 0))
@@ -41,7 +46,7 @@ def plot_image_grid(images, n_images, dataloader=False, title="", subplot_title=
     plt.show()
 
 
-def plot_dataset_images(dataset, num):
+def plot_dataset_images(dataset: ClassifyDataset, num: int):
     images, labels = [], []
     i = 0
     for image, label in dataset:
@@ -55,7 +60,7 @@ def plot_dataset_images(dataset, num):
     plot_image_grid(images, len(images), dataloader=True, title="Photos from raw dataset")
 
 
-def plot_annotated_images(annotated_images, num):
+def plot_annotated_images(annotated_images: np.array, num: int):
     annotated_plot = []
     i = 0
     j = 0
@@ -73,7 +78,7 @@ def plot_annotated_images(annotated_images, num):
     plot_image_grid(annotated_plot[:num], len(annotated_plot[:num]), title="Annotated poses")
 
 
-def plot_no_pose_photo(df, dataset, num=9):
+def plot_no_pose_photo(df: pd.DataFrame, dataset: ClassifyDataset, num:int = 9):
     indx_null = df.index[df["NOSE"].isnull()].tolist()
 
     bad_photos = []
@@ -86,7 +91,8 @@ def plot_no_pose_photo(df, dataset, num=9):
     plot_image_grid(bad_photos, len(bad_photos), dataloader=True, title="Photos where no pose was detected")
 
 
-def find_misclassified_images(difference, all_images, type_, start_index):
+def find_misclassified_images(difference: torch.Tensor, all_images: np.array, type_: str, start_index: int) \
+        -> Tuple[np.array, np.array]:
     indices = np.where(difference != 0)
     np.random.shuffle(indices[0])
     misclassified_images = None
@@ -97,7 +103,8 @@ def find_misclassified_images(difference, all_images, type_, start_index):
     return misclassified_images, indices
 
 
-def find_correctly_classified_images(difference, all_images, type_, start_index):
+def find_correctly_classified_images(difference: torch.Tensor, all_images: np.array, type_: str, start_index: int) \
+        -> Tuple[np.array, np.array]:
     indices = np.where(difference == 0)
     np.random.shuffle(indices[0])
     classified_images = None
@@ -108,8 +115,13 @@ def find_correctly_classified_images(difference, all_images, type_, start_index)
     return classified_images, indices
 
 
-def plot_classified_images(targets, predictions, all_images, type_="training",
-                           max_n_to_plot=16, classified="misclassified", split_ratio=0.8):
+def plot_classified_images(targets: torch.Tensor,
+                           predictions: torch.Tensor,
+                           all_images: np.array,
+                           type_: str = "training",
+                           max_n_to_plot: int = 16,
+                           classified: str = "misclassified",
+                           split_ratio: float = 0.8):
     indices = None
     start_index = None
     classified_images = None
@@ -122,6 +134,7 @@ def plot_classified_images(targets, predictions, all_images, type_="training",
     elif classified == 'correctly classified':
         classified_images, indices = find_correctly_classified_images(difference, all_images, type_, start_index)
     print(f"{len(classified_images)} out of {len(difference)} {type_} images were {classified}.")
+
     # Create subplot titles, consisting of targets and predictions
     subplot_title = list(zip([targets[i].item() for i in indices[0]],
                              [predictions[i].item() for i in indices[0]]))
@@ -130,7 +143,7 @@ def plot_classified_images(targets, predictions, all_images, type_="training",
                     title=f"{classified} {type_} images", subplot_title=subplot_title)
 
 
-def plot_confusion_matrix(targets, predicted, title=None, save_plot=False):
+def plot_confusion_matrix(targets: torch.Tensor, predicted: torch.Tensor, title: str = None, save_plot: bool = False):
     class_names = ["DD", "W1", "W2"]
     conf_mat = confusion_matrix(targets.numpy(), predicted.numpy())
     fig = sns.heatmap(conf_mat, annot=True,
@@ -148,7 +161,7 @@ def plot_confusion_matrix(targets, predicted, title=None, save_plot=False):
     plt.show()
 
 
-def plot_3d_keypoints(x, y, z, elev=-50, azim=270, version=1):
+def plot_3d_keypoints(x: np.array, y: np.array, z: np.array, elev: int = -50, azim: int = 270, version: int = 1):
     fig = plt.figure()
     ax = plt.axes(projection="3d")
     ax.scatter3D(x, y, z)
@@ -159,10 +172,10 @@ def plot_3d_keypoints(x, y, z, elev=-50, azim=270, version=1):
     plt.show()
 
 
-def plot_distribution(df, angles, LANDMARKS):
+def plot_distribution(df: pd.DataFrame, angles: np.array, landmarks: list):
     fig, ax = plt.subplots(2, 8, figsize=(30, 15))
     sns.set_palette(sns.color_palette("Set1"))
-    for idx, col in enumerate(LANDMARKS):
+    for idx, col in enumerate(landmarks):
         y = int(idx/8)
         x = idx % 8
         sns.histplot(df, x=col, hue='quality', ax=ax[y, x], bins=10, multiple='dodge')
@@ -173,10 +186,10 @@ def plot_distribution(df, angles, LANDMARKS):
         ax[y, x].set_xlim(0,180)
 
 
-def plot_distribution_with_image(df, df_new, angles, LANDMARKS):
+def plot_distribution_with_image(df: pd.DataFrame, df_new: pd.DataFrame, angles: np.array, landmarks):
     fig, ax = plt.subplots(2, 8, figsize=(30, 15))
     sns.set_palette(sns.color_palette("Set1"))
-    for idx, col in enumerate(LANDMARKS):
+    for idx, col in enumerate(landmarks):
         y = int(idx/8)
         x = idx % 8
         sns.histplot(df, x=col, hue='quality', ax=ax[y, x], bins=10, multiple='dodge')
