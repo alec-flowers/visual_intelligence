@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from matplotlib import pyplot as plt
+from torch import nn
 
 from gan.cGAN import get_device, generate_noise, load_generator
 from gan.gan_models import Generator
@@ -8,14 +9,15 @@ from pose.plot import plot_3d_keypoints
 from pose.pose_utils import CGAN_PATH
 
 
-def generate_images(generator, labels, device):
+def generate_images(generator: nn.Module, labels: list, device: torch.device) \
+        -> torch.Tensor:
     noise_vector = generate_noise(len(labels), 100, device=device)
     generator.eval()
     images = generator((noise_vector, labels))
     return images
 
 
-def plot_generated_images(generator, labels, device=get_device()):
+def plot_generated_images(generator: nn.Module, labels: list, device: torch.device = get_device()):
     """ Generate subplots with generated examples. """
     images = generate_images(generator, labels, device)
     plt.figure(figsize=(10, 10))

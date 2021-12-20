@@ -97,7 +97,7 @@ def main(args):
         if epoch % 52 == 0:
             save_models(generator, discriminator, G_optimizer, D_optimizer, epoch, args.path)
 
-    save_models(generator, discriminator, G_optimizer, D_optimizer, NUM_EPOCHS, args.path)
+    save_models(generator, discriminator, G_optimizer, D_optimizer, args.epochs, args.path)
 
 
 if __name__ == "__main__":

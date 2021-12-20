@@ -1,17 +1,21 @@
+from typing import Tuple
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 
 from data.data_loading import get_data
-from gan.gan_models import Generator, Discriminator
+from gan.gan_models import Generator, Discriminator, LATENT_DIM
 from pose.pose_utils import GOOD_POSES_PATH, CGAN_PATH
 
 adversarial_loss = nn.BCELoss()
 TRAIN_ON_GPU = False
 
 
-def save_models(generator, discriminator, G_optimizer, D_optimizer, epoch, path):
+def save_models(generator: nn.Module, discriminator: nn.Module,
+                G_optimizer: torch.optim.Adam, D_optimizer: torch.optim.Adam,
+                epoch: int, path: str):
     """ Save models at specific point in time. """
     torch.save({
         'generator': generator.state_dict(),
@@ -21,7 +25,10 @@ def save_models(generator, discriminator, G_optimizer, D_optimizer, epoch, path)
     }, str(path) + f'/model_after_epoch_{epoch}.pth')
 
 
-def load_model(generator, discriminator, G_optimizer, D_optimizer, version, path):
+def load_model(generator: nn.Module, discriminator: nn.Module,
+               G_optimizer: torch.optim.Adam, D_optimizer: torch.optim.Adam,
+               version: int, path: str) \
+        -> Tuple[nn.Module, nn.Module, torch.optim.Adam, torch.optim.Adam]:
     checkpoint = torch.load(str(path) + f'/model_after_epoch_{version}.pth')
     generator.load_state_dict(checkpoint['generator'])
     discriminator.load_state_dict(checkpoint['discriminator'])
@@ -30,13 +37,13 @@ def load_model(generator, discriminator, G_optimizer, D_optimizer, version, path
     return generator, discriminator, G_optimizer, D_optimizer
 
 
-def load_generator(generator, version, path):
+def load_generator(generator: nn.Module, version: int, path: str) -> nn.Module:
     checkpoint = torch.load(str(path) + f'/model_after_epoch_{version}.pth')
     generator.load_state_dict(checkpoint['generator'])
     return generator
 
 
-def print_training_progress(epoch, generator_loss, discriminator_loss):
+def print_training_progress(epoch: int, generator_loss: torch.Tensor, discriminator_loss: torch.Tensor):
     """ Print training progress. """
     print('Losses after epoch %4d: generator %.3f, discriminator %.3f' %
           (epoch, generator_loss.item(), discriminator_loss.item()))
@@ -47,12 +54,12 @@ def get_device():
     return torch.device("cuda:0" if torch.cuda.is_available() and TRAIN_ON_GPU else "cpu")
 
 
-def generator_loss(fake_output, label):
+def generator_loss(fake_output: torch.Tensor, label: torch.Tensor) -> torch.Tensor:
     gen_loss = adversarial_loss(fake_output, label)
     return gen_loss
 
 
-def discriminator_loss(output, label):
+def discriminator_loss(output: torch.Tensor, label: torch.Tensor) -> torch.Tensor:
     disc_loss = adversarial_loss(output, label)
     return disc_loss
 
@@ -69,7 +76,7 @@ def weights_init(m):
         torch.nn.init.zeros_(m.bias)
 
 
-def generate_noise(number_of_images=1, noise_dimension=100, device=None):
+def generate_noise(number_of_images: int = 1, noise_dimension: int = 100, device: torch.device = None) -> torch.Tensor:
     """ Generate noise for number_of_images images, with a specific noise_dimension """
     return torch.randn(number_of_images, noise_dimension, device=device)
 
@@ -91,7 +98,6 @@ if __name__ == "__main__":
     device = get_device()
 
     num_examples_to_generate = 10
-    LATENT_DIM = 100
     N_CLASSES = 3
     start = None
 
