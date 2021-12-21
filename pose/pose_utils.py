@@ -163,7 +163,7 @@ def load_pickle(path, file):
     return data
 
 
-def save_dataframes_to_pickle(path: str, dataframes: pd.DataFrame, filenames: list):
+def save_dataframes_to_pickle(path: str, dataframes: list, filenames: list):
     assert len(dataframes) == len(filenames)
     for i in range(len(dataframes)):
         save_pickle(dataframes[i], path, filenames[i])
