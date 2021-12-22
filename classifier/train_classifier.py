@@ -123,7 +123,7 @@ def train_model(model: nn.Module,
     else:
         model_type = '/classifier'
     if good_bad:
-        model_type = '/good_bad_mlp'
+        model_type = '/pose_quality_mlp'
 
     torch.save({'model_state_dict': model.state_dict(), 'optimizer_state_dict': optimizer.state_dict()},
                str(model_path) + model_type+f"/{now.strftime('%Y_%m_%d_%H_%M')}.ckpt")

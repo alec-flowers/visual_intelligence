@@ -265,6 +265,6 @@ saved_model/
 runs/
 plots/
 data/good_poses/
-data/pickled_data (copy)/
+data/pickled_data_binary/
 data/pickled_DD
 improve_scraping.py

@@ -50,8 +50,8 @@ def main(args):
         get_data(batch_size, split_ratio, args.pickles)
 
     # Configure the training logging
-    logger = TensorBoardLogger("tb_logs", name="good_bad_mlp")
-    checkpoint_callback = ModelCheckpoint(monitor="train_loss", dirpath="saved_model/good_bad_mlp/")
+    logger = TensorBoardLogger("tb_logs", name="pose_quality_mlp")
+    checkpoint_callback = ModelCheckpoint(monitor="train_loss", dirpath="saved_model/pose_quality_mlp/")
 
     torch.manual_seed(42)
 
@@ -66,7 +66,7 @@ def main(args):
 
     else:
         # Load a previously trained model
-        checkpoint = torch.load(str(args.save) + "/good_bad_mlp/" + args.version)
+        checkpoint = torch.load(str(args.save) + "/pose_quality_mlp/" + args.version)
         good_bad_mlp.load_state_dict(checkpoint['model_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         train_model(good_bad_mlp, train_loader, val_loader, loss_function,

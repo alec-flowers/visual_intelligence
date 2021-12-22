@@ -63,7 +63,7 @@ We also provided default values such that the data gets pulled from a folder ```
 and saved to a folder ```./data/pickled_data``` and we automatically ```visualize``` and 
 ```don't skip``` the annotated images.
 
-### The pose classification into poses
+### The pose type classification
 We have trained a multilayer perceptron (MLP) to classify our pose estimates into the poses 
 downward dog, warrior 1 and warrior 2. To train it yourself, or to resume training a current model,
 you can run the file ```classify.py``` in the ```classify``` folder.
@@ -78,8 +78,21 @@ It takes the following arguments:
 ```
 There are defaults set for every argument, so it aligns with the rest of our pipeline.
 
-### The good - bad pose classification
-TODO
+### The pose quality classification
+To classify the quality (good/ bad) of a given pose, we have again trained and tested an MLP.
+To train the network yourself, or to resume training a current model, or to just get the analyzing visualisations,
+you can run the file ```classify_pose_quality.py``` in the ```classify``` folder.
+It takes the following arguments:
+```bash
+-pickles "Path to load the pickled dataframes from the pose estimation from." (str)
+-scratch "Train the classifier from scratch or load a previously trained model."  (bool)
+-version "If you don't train from scratch, specify the model version to be resumed for training." (str)
+-save "Path to save and load the trained model to/ from." (str)
+-epochs "How many epochs to train the model for." (int)
+-viz "Visualize confusion matrices of the classifier and correctly and incorrectly classified images." (bool)
+```
+There are defaults set for every argument, and we provide you with a pretrained model already, 
+in case you just want to replicate our paper's figures.
 
 ### The pose correction
 We have developed three approaches to correct a misclassified image. 
@@ -102,7 +115,6 @@ but if you want to chance something, here is how to:
 -epochs "How many epochs to train the model for." (int)
 ```
 
-
 ## File Structure
 Here is the file structure of the project:
 ```bash
@@ -112,6 +124,7 @@ Project
 |   |-- __init__.py
 |   |-- classifier_models.py
 |   |-- classify.py
+|   |-- classify_pose_quality.py
 |   |-- cnn_classifier.py
 |   |-- test_classifier.py
 |   |-- train_classifier.py
@@ -143,7 +156,8 @@ Project
 |   |   |-- model_after_epoch_780.pth
 |   |-- mlp -- |
 |   |   |-- 2021_12_22_10_05.ckpt
-|   |   |-- mlp_intermediate.ckpt
+|   |-- pose quality mlp -- |
+|   |   |-- 2021_12_22_08_58.ckpt
 |-- .gitignore
 |-- README.md
 
@@ -152,7 +166,8 @@ Project
 ## Files
 **Classifier**
 * `classifier_models.py`: the neural network classifier architectures
-* `classify.py`: train the MLP classifier from scratch or load a trained version
+* `classify.py`: train the pose type MLP classifier from scratch or load a trained version
+* `classify.py`: train the pose quality MLP classifier from scratch or load a trained version
 * `cnn_classifier.py`: train the CNN classifier from scratch or load a trained version
 * `test_classifier.py`: make predictions with the trained model
 * `train_classifier.py`: train an MLP or CNN classifier 
