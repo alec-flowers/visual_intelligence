@@ -143,15 +143,23 @@ def plot_classified_images(targets: torch.Tensor,
                     title=f"{classified} {type_} images", subplot_title=subplot_title)
 
 
-def plot_confusion_matrix(targets: torch.Tensor, predicted: torch.Tensor, title: str = None, save_plot: bool = False):
-    class_names = ["DD", "W1", "W2"]
+def plot_confusion_matrix(targets: torch.Tensor,
+                          predicted: torch.Tensor,
+                          title: str = None,
+                          save_plot: bool = False,
+                          good_bad: bool = False):
+    if good_bad:
+        # class_names = ["DD_bad", "W1_bad", "W2_bad", "DD_good", "W1_good", "W2_good"]
+        class_names = ["bad", "good"]
+    else:
+        class_names = ["DD", "W1", "W2"]
     conf_mat = confusion_matrix(targets.numpy(), predicted.numpy())
     fig = sns.heatmap(conf_mat, annot=True,
                       cmap=sns.color_palette("light:#5A9", as_cmap=True),
                       cbar_kws={'label': 'count'}, fmt='g')
     plt.xlabel("Predicted label")
     plt.ylabel("True label")
-    plt.title("Confusion matrix for the " + title + " data")
+    # plt.title("Confusion matrix for the " + title + " data")
     tick_marks = np.arange(len(class_names)) + 0.5
     plt.xticks(tick_marks, class_names, rotation=90)
     plt.yticks(tick_marks, class_names, rotation=0)

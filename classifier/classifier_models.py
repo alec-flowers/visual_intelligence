@@ -23,6 +23,36 @@ class MLP(nn.Module):
         return self.layers(x)
 
 
+class GoodBadMLP(nn.Module):
+    """
+        Multilayer Perceptron for classifying good-bad poses based on detected keypoints.
+        Inputs are 33 landmarks with (x,y,z) coordinates, respectively, leading to 33*3 input nodes.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.layers = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(33 * 3, 64),
+            nn.BatchNorm1d(num_features=64),
+            nn.LeakyReLU(negative_slope=0.2),
+            nn.Linear(64, 64),
+            nn.BatchNorm1d(num_features=64),
+            nn.LeakyReLU(negative_slope=0.2),
+            nn.Linear(64, 32),
+            nn.BatchNorm1d(num_features=32),
+            nn.LeakyReLU(negative_slope=0.2),
+            nn.Linear(32, 16),
+            nn.BatchNorm1d(num_features=16),
+            nn.LeakyReLU(negative_slope=0.2),
+            nn.Linear(16, 1)
+        )
+
+    def forward(self, x):
+        output = self.layers(x)
+        return output.view(-1)
+
+
 class CNN(nn.Module):
     """
     CNN for classifying poses based on the raw input image.

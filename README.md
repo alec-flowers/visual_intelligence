@@ -142,7 +142,7 @@ Project
 |   |-- cLimbGAN -- |
 |   |   |-- model_after_epoch_780.pth
 |   |-- mlp -- |
-|   |   |-- 2021_11_22_20_46_21.ckpt
+|   |   |-- 2021_12_22_10_05.ckpt
 |   |   |-- mlp_intermediate.ckpt
 |-- .gitignore
 |-- README.md

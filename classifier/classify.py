@@ -26,7 +26,7 @@ def classify_image(coordinates: np.array, reshape_inputs: bool = True) -> np.arr
 
     optimizer = torch.optim.Adam(mlp.parameters(), lr=1e-4)
 
-    checkpoint = torch.load(str(MODEL_PATH) + "/mlp"+"/2021_11_22_20_46_21.ckpt")
+    checkpoint = torch.load(str(MODEL_PATH) + "/mlp"+"/2021_12_22_10_05.ckpt")
     mlp.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
@@ -45,13 +45,13 @@ def parse_args():
     parser.add_argument("-scratch", type=bool, default=False,
                         help="Train the classifier from scratch or load a previously trained model.")
     parser.add_argument("-version", type=str,
-                        required=False, default="2021_12_10_10_42_37.ckpt",
+                        required=False, default="2021_12_22_10_05.ckpt",
                         help="If you don't train from scratch, specify the model version to be resumed for training.")
     parser.add_argument("-save", type=str,
                         required=False, default=MODEL_PATH,
                         help="Path to save and load the trained model to/ from.")
     parser.add_argument("-epochs", type=int,
-                        required=False, default=100,
+                        required=False, default=500,
                         help="How many epochs to train the model for.")
     parser.add_argument("-viz", type=bool,
                         required=False, default=True,
@@ -90,6 +90,7 @@ def main(args):
         checkpoint = torch.load(str(args.save) + "/mlp/" + args.version)
         mlp.load_state_dict(checkpoint['model_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        train_model(mlp, train_loader, val_loader, loss_function, optimizer, args.epochs, writer, args.save)
 
     annotated_images_filtered = get_not_none_annotated_images(args.pickles)
     if annotated_images_filtered:
@@ -101,8 +102,8 @@ def main(args):
 
     if args.viz:
         # Confusion matrix
-        plot_confusion_matrix(targets_val, predicted_class_val, 'validation', save_plot=False)
-        plot_confusion_matrix(targets_train, predicted_class_train, 'training', save_plot=False)
+        plot_confusion_matrix(targets_val, predicted_class_val, 'validation', save_plot=False, good_bad=False)
+        plot_confusion_matrix(targets_train, predicted_class_train, 'training', save_plot=False, good_bad=False)
 
         if annotated_images_filtered is not None:
             # Plot misclassified train images

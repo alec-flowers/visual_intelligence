@@ -1,4 +1,5 @@
 import datetime
+from typing import Union
 
 import numpy as np
 import torch
@@ -10,12 +11,13 @@ from pose.pose_utils import MODEL_PATH
 def train_model(model: nn.Module,
                 train_loader: torch.utils.data.dataloader.DataLoader,
                 val_loader: torch.utils.data.dataloader.DataLoader,
-                loss_function: nn.CrossEntropyLoss,
+                loss_function: Union[nn.CrossEntropyLoss, nn.BCEWithLogitsLoss],
                 optimizer: torch.optim.Adam,
                 epochs: int,
                 writer: torch.utils.tensorboard.writer.SummaryWriter,
                 model_path: str = MODEL_PATH,
-                mlp: bool = True):
+                mlp: bool = True,
+                good_bad: bool = False):
     """
     Train an MLP or CNN model with some data and validate the training process after each epoch.
 
@@ -37,6 +39,8 @@ def train_model(model: nn.Module,
     :type model_path: str
     :param mlp: whether we train the MLP or the CNN
     :type mlp: bool
+    :param good_bad: whether we are in the pose quality classification scenario or not
+    :type good_bad: bool
     """
     min_valid_loss = np.inf
     for epoch in range(0, epochs):
@@ -47,7 +51,6 @@ def train_model(model: nn.Module,
 
         # Iterate over the DataLoader for training data
         for i, data in enumerate(train_loader, 0):
-            print(f"Processing batch {i}")
             inputs, targets, _ = data
             if mlp:
                 inputs = inputs.view(inputs.size(0), -1).float()
@@ -63,7 +66,10 @@ def train_model(model: nn.Module,
             current_loss += loss.item()
 
             # Get accuracy
-            pred = torch.argmax(outputs, dim=1)
+            if good_bad:
+                pred = torch.round(torch.sigmoid(outputs))
+            else:
+                pred = torch.argmax(outputs, dim=1)
             train_acc += torch.sum(pred == targets)
 
         # Log the average loss after an epoch
@@ -84,7 +90,10 @@ def train_model(model: nn.Module,
             outputs = model(inputs)
             loss = loss_function(outputs, targets)
             valid_loss += loss.item()
-            pred = torch.argmax(outputs, dim=1)
+            if good_bad:
+                pred = torch.round(torch.sigmoid(outputs))
+            else:
+                pred = torch.argmax(outputs, dim=1)
             valid_acc += torch.sum(pred == targets)
 
         # Log the average validation loss after an epoch
@@ -109,6 +118,12 @@ def train_model(model: nn.Module,
     print('Training process has finished.')
 
     now = datetime.datetime.now()
-    model_type = '/mlp' if mlp else '/classifier'
+    if mlp:
+        model_type = '/mlp'
+    else:
+        model_type = '/classifier'
+    if good_bad:
+        model_type = '/good_bad_mlp'
+
     torch.save({'model_state_dict': model.state_dict(), 'optimizer_state_dict': optimizer.state_dict()},
-               str(model_path) + model_type+f"/{now.strftime('%Y_%m_%d_%H_%M_%S')}.ckpt")
+               str(model_path) + model_type+f"/{now.strftime('%Y_%m_%d_%H_%M')}.ckpt")

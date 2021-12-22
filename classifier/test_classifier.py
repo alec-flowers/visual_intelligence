@@ -1,16 +1,19 @@
-from typing import Tuple
+from typing import Tuple, Union, Any
 
 import numpy as np
 import torch
-from torch import nn
+from numpy import ndarray
+from torch import nn, Tensor
 
 from data.data_loading import CoordinatesDataset
 
 
-def evaluate_model(model: nn.Module, dataset: CoordinatesDataset, reshape_inputs: bool = False) \
-        -> Tuple[torch.Tensor, torch.Tensor]:
+def evaluate_model(model: nn.Module, dataset: CoordinatesDataset,
+                   reshape_inputs: bool = False, good_bad: bool = False) \
+        -> Tuple[Union[Tensor, Any], Tensor]:
     """
     Make predictions with the trained model.
+
     :param model: the MLP or CNN model
     :type model: nn.Module
     :param dataset: the data to make predictions on
@@ -19,6 +22,8 @@ def evaluate_model(model: nn.Module, dataset: CoordinatesDataset, reshape_inputs
     :type reshape_inputs: bool
     :return: the targets and the predictions
     :rtype: Tensor
+    :param good_bad: whether we are in the pose quality classification scenario or not
+    :type good_bad:
     """
     inputs = dataset.coordinates
     targets = dataset.labels
@@ -30,5 +35,8 @@ def evaluate_model(model: nn.Module, dataset: CoordinatesDataset, reshape_inputs
     model.eval()
     with torch.no_grad():
         predictions = model(inputs)
-        predicted_class = np.argmax(predictions, axis=1)
+        if good_bad:
+            predicted_class = torch.round(torch.sigmoid(predictions))
+        else:
+            predicted_class = torch.argmax(predictions, dim=1)
         return targets, predicted_class

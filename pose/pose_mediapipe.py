@@ -43,7 +43,7 @@ def poses_for_dataset(dataloader: torch.utils.data.dataloader.DataLoader,
 def estimate_poses(image: torch.Tensor,
                    label: torch.Tensor,
                    skip_image_annotation: bool,
-                   plot: bool = False)\
+                   plot: bool = False) \
         -> Tuple[NamedTuple, Any]:
     with mp_pose.Pose(
             static_image_mode=True,
@@ -101,7 +101,8 @@ def pose_landmarks_to_list(solution: mediapipe.python.solution_base.SolutionBase
 
 def pose_to_dataframe(estimated_poses: list,
                       dataset: ClassifyDataset,
-                      pose_var: str) \
+                      pose_var: str,
+                      good_bad: bool = False) \
         -> Tuple[pd.DataFrame, pd.DataFrame, np.array, np.array]:
     all_val = []
     visib_val = []
@@ -128,11 +129,19 @@ def pose_to_dataframe(estimated_poses: list,
     df['tmp'] = labels
     df_vis['tmp'] = labels
 
-    df['label'] = df.apply(lambda x: CLASS_MAPPINGS_IDX[x['tmp']], axis=1)
+    if good_bad:
+        df['label'] = df.apply(lambda x: POSE_QUALITY_MAPPINGS[x['tmp']], axis=1)
+    else:
+        df['label'] = df.apply(lambda x: CLASS_MAPPINGS_IDX[x['tmp']], axis=1)
+
     df['quality'] = df.apply(lambda x: POSE_QUALITY_MAPPINGS[x['tmp']], axis=1)
     df.drop('tmp', axis=1, inplace=True)
 
-    df_vis['label'] = df_vis.apply(lambda x: CLASS_MAPPINGS_IDX[x['tmp']], axis=1)
+    if good_bad:
+        df_vis['label'] = df_vis.apply(lambda x: POSE_QUALITY_MAPPINGS[x['tmp']], axis=1)
+    else:
+        df_vis['label'] = df_vis.apply(lambda x: CLASS_MAPPINGS_IDX[x['tmp']], axis=1)
+
     df_vis['quality'] = df_vis.apply(lambda x: POSE_QUALITY_MAPPINGS[x['tmp']], axis=1)
     df_vis.drop('tmp', axis=1, inplace=True)
 
@@ -155,19 +164,22 @@ def parse_args():
     parser.add_argument("-skip", type=bool,
                         required=False, default=False,
                         help="Skip saving the annotated images, because they take a lot of memory.")
+    parser.add_argument("-gb", type=bool,
+                        required=False, default=False,
+                        help="Whether we want to distinguish between good and bad poses or not.")
     return parser.parse_args()
 
 
 def main(args):
-    dataset, dataloader = load_data(path=args.path, batch_size=None, shuffle=False)
+    dataset, dataloader = load_data(path=args.path, batch_size=None, shuffle=False, good_bad=args.gb)
 
     # Pose estimation
     estimated_poses, annotated_images = poses_for_dataset(dataloader, skip_image_annotation=args.skip)
 
     df, df_vis, numpy_data, labels_drop_na = \
-        pose_to_dataframe(estimated_poses, dataset, pose_var='pose_landmarks')
+        pose_to_dataframe(estimated_poses, dataset, pose_var='pose_landmarks', good_bad=args.gb)
     df_world, df_vis_world, numpy_data_world, _ = \
-        pose_to_dataframe(estimated_poses, dataset, pose_var='pose_world_landmarks')
+        pose_to_dataframe(estimated_poses, dataset, pose_var='pose_world_landmarks', good_bad=args.gb)
 
     save_dataframes_to_pickle(args.save,
                               [df, df_vis, numpy_data, df_world, df_vis_world, numpy_data_world,

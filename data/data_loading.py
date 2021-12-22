@@ -43,6 +43,8 @@ class SubsetWithAttributes(Dataset):
 
 class CoordinatesDataset(Dataset):
     def __init__(self, coordinates, labels, set_type, shuffle=True, split_ratio=0.8):
+
+        labels = labels.astype(int)
         if shuffle:
             np.random.seed(42)
             shuffled_indices = np.random.permutation(coordinates.shape[0])
@@ -123,7 +125,7 @@ class GoodBadDataset(ImageFolder):
         if not classes:
             raise FileNotFoundError(f"Couldn't find any class folder in {directory}.")
 
-        # Map classes to [downwardDog, warrior1, warrior2]
+        # Map classes to good bad label
         class_to_idx = {cls_names: i for i, cls_names in enumerate(classes)}
 
         return classes, class_to_idx
@@ -131,10 +133,10 @@ class GoodBadDataset(ImageFolder):
 
 def load_data(path: str = TRAINPATH,
               resize: bool = False,
-              batch_size: int = 32,
+              batch_size: Optional[int] = 32,
               shuffle: bool = True,
               batch_sampler: torch.utils.data.Sampler = None,
-              classify: bool = True) \
+              good_bad: bool = False) \
         -> Tuple[ClassifyDataset, DataLoader]:
     if resize:
         resize_size = 300
@@ -145,10 +147,11 @@ def load_data(path: str = TRAINPATH,
                                          transforms.ConvertImageDtype(torch.float32)]))
     else:
         transform = TRANSFORM
-    if classify:
-        dataset = ClassifyDataset(path, transform=transform)
-    else:
+    if good_bad:
         dataset = GoodBadDataset(path, transform=transform)
+    else:
+        dataset = ClassifyDataset(path, transform=transform)
+
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, batch_sampler=batch_sampler)
 
     return dataset, dataloader
