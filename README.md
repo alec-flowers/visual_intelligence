@@ -196,6 +196,7 @@ Project
 * `test_cLimbGAN.py`: generate poses with the cLimbGAN
 
 **Notebooks**
+* `plots_for_report`: various plots used in the report
 * `pose_correction_pipeline.ipynb`: a showcase of our whole correction system
 
 **Pose**
