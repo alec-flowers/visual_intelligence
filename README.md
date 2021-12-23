@@ -12,22 +12,22 @@ We provide a framework for correcting 3D human poses, showcased on the example o
 
 The code contained in this repository was tested on the following configuration of python:
 
-`torch>=1.10.0`
-`numpy>=1.21.3`
-`matplotlib>=3.4.3`
-`Pillow>=8.4.0`
-`beautifulsoup4>=4.10.0`
-`requests>=2.26.0`
-`selenium>=4.0.0`
-`pandas>=1.3.4`
-`torchvision>=0.11.1`
-`seaborn>=0.11.2`
-`sklearn>=0.0`
-`scikit-learn>=1.0.1`
-`opencv-python>=4.5.4.58`
-`mediapipe>=0.8.8.1`
-`tqdm>=4.62.3`
-`scipy>=1.7.2`
+* `torch>=1.10.0`
+* `numpy>=1.21.3`
+* `matplotlib>=3.4.3`
+* `Pillow>=8.4.0`
+* `beautifulsoup4>=4.10.0`
+* `requests>=2.26.0`
+* `selenium>=4.0.0`
+* `pandas>=1.3.4`
+* `torchvision>=0.11.1`
+* `seaborn>=0.11.2`
+* `sklearn>=0.0`
+* `scikit-learn>=1.0.1`
+* `opencv-python>=4.5.4.58`
+* `mediapipe>=0.8.8.1`
+* `tqdm>=4.62.3`
+* `scipy>=1.7.2`
 
 ## Installation Guide
 
@@ -39,7 +39,7 @@ pip3 install -r requirements.txt
 1. To use our data go to [DATA LINK](https://drive.google.com/drive/folders/1JxBM7r1Y8j3aFGCrnUgBDihJm51d70NA?usp=sharing)
 and download the `train_text_pickled_data.zip`. Note it is 6.5 GB. 
 
-2. Place this into the `data folder` and unzip.
+2. Place this into the `data` folder and unzip.
 
 This will add folders `train`, `test`, and `pickled_data` to your folder structure. These are necessary to run the code
 and if you don't have these folders `pose_utils.py` will complain. 
