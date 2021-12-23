@@ -33,8 +33,8 @@ def classify_correct(coordinates: np.array, reshape_inputs: bool = True) -> np.a
     good_bad_mlp.eval()
     with torch.no_grad():
         prediction = good_bad_mlp(input)
-        predicted_class = prediction
-        return prediction
+        predicted_class = torch.round(torch.sigmoid(prediction))
+        return predicted_class
 
 
 def parse_args():

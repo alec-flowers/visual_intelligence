@@ -98,9 +98,19 @@ in case you just want to replicate our paper's figures.
 We have developed three approaches to correct a misclassified image. 
 Here we describe how to run them with our code base.
 #### The Learned Angle Distribution correction
-TODO
+
+We have implemented this correction in the `pose_correction_pipeline.ipynb`. The function `plot_distribution_with_image()`
+plots the distribution with confidence intervals as red lines and the input image angles as blue lines.
+
+The correct dataset which we build the distribution is loaded in from a pickle `pose_landmark_all_df`. This is created
+by running the Pose Estimation piece from above. 
+
 #### The Nearest Neighbour correction
-TODO
+We have implemented this correction in the `pose_correction_pipeline.ipynb`. The function `compare_two_figures()`
+displays both the input image and the nearest neighbor image along with the 3D correction. 
+
+The nearest neighbor dataset comes from `pose_landmark_numpy.pickle`. This is created by running the Pose Estimation
+piece from above. 
 
 #### The Generative cLimbGAN correction
 To train our cLimbGAN or resume training of your current version of the model, 
