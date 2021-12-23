@@ -1,4 +1,5 @@
 import datetime
+from typing import Union
 
 import numpy as np
 import torch
@@ -7,20 +8,21 @@ from torch import nn
 from pose.pose_utils import MODEL_PATH
 
 
-def train_model(model,
+def train_model(model: nn.Module,
                 train_loader: torch.utils.data.dataloader.DataLoader,
                 val_loader: torch.utils.data.dataloader.DataLoader,
-                loss_function: nn.CrossEntropyLoss,
+                loss_function: Union[nn.CrossEntropyLoss, nn.BCEWithLogitsLoss],
                 optimizer: torch.optim.Adam,
                 epochs: int,
                 writer: torch.utils.tensorboard.writer.SummaryWriter,
-                save_model: bool,
-                mlp: bool = True):
+                model_path: str = MODEL_PATH,
+                mlp: bool = True,
+                good_bad: bool = False):
     """
     Train an MLP or CNN model with some data and validate the training process after each epoch.
 
     :param model: A model from our model.py file
-    :type model: MLP or CNN
+    :type model: MLP or CNN, nn.Module
     :param train_loader: the training data
     :type train_loader: torch.utils.data.dataloader.DataLoader
     :param val_loader: the validation data
@@ -33,10 +35,12 @@ def train_model(model,
     :type epochs: int
     :param writer: log the training process
     :type writer: torch.utils.tensorboard.writer.SummaryWriter
-    :param save_model: whether we want to save the trained model
-    :type save_model: bool
+    :param model_path: path to save the trained model
+    :type model_path: str
     :param mlp: whether we train the MLP or the CNN
     :type mlp: bool
+    :param good_bad: whether we are in the pose quality classification scenario or not
+    :type good_bad: bool
     """
     min_valid_loss = np.inf
     for epoch in range(0, epochs):
@@ -47,7 +51,6 @@ def train_model(model,
 
         # Iterate over the DataLoader for training data
         for i, data in enumerate(train_loader, 0):
-            print(f"Processing batch {i}")
             inputs, targets, _ = data
             if mlp:
                 inputs = inputs.view(inputs.size(0), -1).float()
@@ -63,7 +66,10 @@ def train_model(model,
             current_loss += loss.item()
 
             # Get accuracy
-            pred = torch.argmax(outputs, dim=1)
+            if good_bad:
+                pred = torch.round(torch.sigmoid(outputs))
+            else:
+                pred = torch.argmax(outputs, dim=1)
             train_acc += torch.sum(pred == targets)
 
         # Log the average loss after an epoch
@@ -84,7 +90,10 @@ def train_model(model,
             outputs = model(inputs)
             loss = loss_function(outputs, targets)
             valid_loss += loss.item()
-            pred = torch.argmax(outputs, dim=1)
+            if good_bad:
+                pred = torch.round(torch.sigmoid(outputs))
+            else:
+                pred = torch.argmax(outputs, dim=1)
             valid_acc += torch.sum(pred == targets)
 
         # Log the average validation loss after an epoch
@@ -94,12 +103,12 @@ def train_model(model,
         writer.add_scalar('validation accuracy',
                           valid_acc / len(val_loader.dataset),
                           epoch)
-        if save_model:
-            if min_valid_loss > valid_loss:
-                print(f'Validation Loss Decreased. Saving The Model...')
-                min_valid_loss = valid_loss
-                torch.save({'model_state_dict': model.state_dict(), 'optimizer_state_dict': optimizer.state_dict()},
-                           str(MODEL_PATH) + f"/model_intermediate.ckpt")
+
+        if min_valid_loss > valid_loss:
+            print(f'Validation Loss Decreased. Saving The Model...')
+            min_valid_loss = valid_loss
+            torch.save({'model_state_dict': model.state_dict(), 'optimizer_state_dict': optimizer.state_dict()},
+                       str(model_path) + f"/model_intermediate.ckpt")
 
         # Print statistics after every epoch
         print('Average training after epoch   %3d| Loss: %.3f | Acc: %.3f ' %
@@ -107,8 +116,14 @@ def train_model(model,
         print('Average validation after epoch %3d| Loss: %.3f | Acc: %.3f' %
               (epoch + 1, valid_loss / len(val_loader), valid_acc / len(val_loader.dataset)))
     print('Training process has finished.')
-    if save_model:
-        now = datetime.datetime.now()
-        model_type = '/mlp' if mlp else '/classifier'
-        torch.save({'model_state_dict': model.state_dict(), 'optimizer_state_dict': optimizer.state_dict()},
-                   str(MODEL_PATH) + model_type+f"/{now.strftime('%Y_%m_%d_%H_%M_%S')}.ckpt")
+
+    now = datetime.datetime.now()
+    if mlp:
+        model_type = '/mlp'
+    else:
+        model_type = '/classifier'
+    if good_bad:
+        model_type = '/pose_quality_mlp'
+
+    torch.save({'model_state_dict': model.state_dict(), 'optimizer_state_dict': optimizer.state_dict()},
+               str(model_path) + model_type+f"/{now.strftime('%Y_%m_%d_%H_%M')}.ckpt")

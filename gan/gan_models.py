@@ -4,7 +4,7 @@ import torch.nn as nn
 from pose.pose_utils import BODY_POSE_CONNECTIONS
 
 N_CLASSES = 3
-LATENT_DIM = 50
+LATENT_DIM = 100
 GENERATOR_OUTPUT_IMAGE_SHAPE = 33 * 3
 EMBEDDING_DIM = 100
 

@@ -26,19 +26,20 @@ if __name__ == "__main__":
     filenames = np.array(filenames)[s].tolist()
 
     fig = plt.figure(figsize=(8, 8))
-    plt.title("Generated images by cLimbGAN")
+    # plt.title("Generated images by cLimbGAN")
     plt.axis('off')
     columns = 4
     rows = 4
     OFFSET = 0
     ax = []
-    for i in range(OFFSET, OFFSET + columns * rows-1):
+    for i in range(OFFSET, OFFSET + columns * rows):
         img = image_list[i]
-        t = filenames[i].split('_vs_')[1]
+        t = filenames[i].split('_version_')[1]
         i = i - OFFSET
         ax.append(fig.add_subplot(rows, columns, i+1))
-        ax[-1].set_title("After epoch  " + t)  # set title
+        ax[-1].set_title("After epoch  " + str(int(t)))  # set title
         plt.axis('off')
         plt.imshow(img)
     plt.tight_layout()
+    plt.savefig(str(PLOT_PATH) + f"/GAN_convergence_over_epochs.png")
     plt.show()
