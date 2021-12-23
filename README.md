@@ -52,8 +52,9 @@ You can run a showcase of our correction system in this
 [jupyter notebook](https://gitlab.com/aglavac/cs-503-visual-intelligence/-/blob/main/notebooks/pose_correction_pipeline.ipynb).
 
 You can add your own images under the test folder to see how it works on you!
-1. Take a photo of yourself performing one of the 3 yoga poses
-2. Add the photo to the correct folder under `test`. 0 represents an incorrect pose, 1 represents a correct pose.
+1. Take a photo of yourself performing one of the 3 yoga poses.
+2. Use .jpg or .jpeg format or you have to manually modify the filepath.
+3. Add the photo to the correct folder under `test`. 0 represents an incorrect pose, 1 represents a correct pose.
 
 If you are interested in rerunning the individual steps we display there, this is how you would do it.
 
