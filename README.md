@@ -41,7 +41,7 @@ pip3 install -r requirements.txt
 1. To use our data go to [DATA LINK](https://drive.google.com/drive/folders/1JxBM7r1Y8j3aFGCrnUgBDihJm51d70NA?usp=sharing)
 and download the `train_text_pickled_data.zip`. Note it is 6.5 GB. 
 
-2. Place this into the `data folder` and unzip.
+2. Place this into the `data` folder and unzip.
 
 3. Move the folders `train`, `test`, and `pickled_data` out of the unzip folder and into the data folder. These are 
 necessary to run the code and if you don't have these folders `pose_utils.py` will complain. 
