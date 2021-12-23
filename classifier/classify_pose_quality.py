@@ -15,6 +15,28 @@ from pose.plot import plot_classified_images, plot_confusion_matrix
 from pose.pose_utils import MODEL_PATH, PICKLEDPATH
 
 
+def classify_correct(coordinates: np.array, reshape_inputs: bool = True) -> np.array:
+    if reshape_inputs:
+        input = torch.from_numpy(coordinates)
+        input = input.view(input.size(0), -1).float()
+
+    torch.manual_seed(42)
+
+    good_bad_mlp = GoodBadMLP()
+
+    optimizer = torch.optim.Adam(good_bad_mlp.parameters(), lr=1e-4)
+
+    checkpoint = torch.load(str(MODEL_PATH) + "/pose_quality_mlp/" + "2021_12_22_08_58.ckpt")
+    good_bad_mlp.load_state_dict(checkpoint['model_state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+    good_bad_mlp.eval()
+    with torch.no_grad():
+        prediction = good_bad_mlp(input)
+        predicted_class = prediction
+        return prediction
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Good - Bad classification.')
     parser.add_argument("-pickles", type=str,
