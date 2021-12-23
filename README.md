@@ -39,7 +39,7 @@ pip3 install -r requirements.txt
 
 ## Data Download
 1. To use our data go to [DATA LINK](https://drive.google.com/drive/folders/1JxBM7r1Y8j3aFGCrnUgBDihJm51d70NA?usp=sharing)
-and download the `train_text_pickled_data.zip`. Note it is 6.5 GB. 
+and download the `train_text_pickled_data.zip`. Note it is 2.2 GB. 
 
 2. Place this into the `data` folder and unzip.
 
