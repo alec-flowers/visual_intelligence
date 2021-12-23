@@ -187,11 +187,28 @@ def plot_distribution_with_image(df, df_new, angles, LANDMARKS):
         ax[y, x].set_xlim(0, 180)
     plt.show()
 
+    ang_name = []
+    degree = []
     for ang in angles:
         low = angles[ang][0]
         high = angles[ang][2]
         current = df_new[ang][0]
         if current < low:
-            print(f"{ang} is to small by - {low - current:.1f} degrees")
+            # print(f"{ang} is to small by - {low - current:.1f} degrees")
+            degree.append(low-current)
+            ang_name.append(ang)
         elif current > high:
-            print(f"{ang} is to large by - {current - high:.1f} degrees")
+            # print(f"{ang} is to large by - {current - high:.1f} degrees")
+            degree.append(high-current)
+            ang_name.append(ang)
+    ind_sort = np.argsort(np.array(degree))
+    ang_name_sort = np.array(ang_name)[ind_sort]
+    degree_sort = np.array(degree)[ind_sort]
+
+    for i in reversed(range(len(degree_sort))):
+        deg = degree_sort[i]
+        ang = ang_name_sort[i]
+        if deg > 0:
+            print(f"{ang} is to small by - {abs(deg):.1f} degrees")
+        else:
+            print(f"{ang} is to large by - {abs(deg):.1f} degrees")

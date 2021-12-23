@@ -300,10 +300,21 @@ def compare_two_figures(length_fig: np.array,
     if plot:
         fig = plt.figure()
         ax = plt.axes(projection="3d")
-        ax.scatter3D(px, py, pz)
-        ax.scatter3D(lx, ly, lz)
-        ax.view_init(elev=-50, azim=270)
+        ax.scatter3D(px, py, pz, color='g')
+        #ax.scatter3D(lx, ly, lz, color='r)
+        ax.view_init(elev=-80, azim=270)
         for i, j in BODY_POSE_CONNECTIONS:
-            ax.plot([px[i], px[j]], [py[i], py[j]], [pz[i], pz[j]], color='b')
-            ax.plot([lx[i], lx[j]], [ly[i], ly[j]], [lz[i], lz[j]], color='r')
+            ax.plot([px[i], px[j]], [py[i], py[j]], [pz[i], pz[j]], color='g')
+            #ax.plot([lx[i], lx[j]], [ly[i], ly[j]], [lz[i], lz[j]], color='r')
         plt.show()
+
+
+def plot_3D(keypoints: np.array, elev: int = -50, azim: int = 270, connections = BODY_POSE_CONNECTIONS):
+    px, py, pz = keypoints.T[0], keypoints.T[1], keypoints.T[2]
+    fig = plt.figure()
+    ax = plt.axes(projection="3d")
+    ax.scatter3D(px, py, pz)
+    ax.view_init(elev=elev, azim=azim)
+    for i, j in connections:
+        ax.plot([px[i], px[j]], [py[i], py[j]], [pz[i], pz[j]], color='b')
+    plt.show()
