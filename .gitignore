@@ -253,7 +253,6 @@ cython_debug/
 
 data/pickled_data
 data/test
-data/to_classify
 data/train
 archiv/
 .DS_Store
@@ -263,7 +262,8 @@ tb_logs/
 scraping/
 saved_model/
 runs/
-plots/
+plots/*
+!plots/.gitkeep
 data/good_poses/
 data/pickled_data_binary/
 data/pickled_DD
