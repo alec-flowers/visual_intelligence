@@ -260,11 +260,15 @@ archiv/
 
 tb_logs/
 scraping/
-saved_model/
+saved_model/cGAN/*
+saved_model/decision_tree/*
+!saved_model/cGAN/.gitkeep
+!saved_model/decision_tree/.gitkeep
 runs/
 plots/*
 !plots/.gitkeep
-data/good_poses/
+data/good_poses/*
+!data/good_poses/.gitkeep
 data/pickled_data_binary/
 data/pickled_DD
 improve_scraping.py

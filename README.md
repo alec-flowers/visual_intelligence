@@ -28,6 +28,8 @@ The code contained in this repository was tested on the following configuration 
 `mediapipe>=0.8.8.1`
 `tqdm>=4.62.3`
 `scipy>=1.7.2`
+`notebook>=6.4.5`
+`pytorch-lightning>=1.5.4`
 
 ## Installation Guide
 
@@ -41,15 +43,17 @@ and download the `train_text_pickled_data.zip`. Note it is 6.5 GB.
 
 2. Place this into the `data folder` and unzip.
 
-This will add folders `train`, `test`, and `pickled_data` to your folder structure. These are necessary to run the code
-and if you don't have these folders `pose_utils.py` will complain. 
+3. Move the folders `train`, `test`, and `pickled_data` out of the unzip folder and into the data folder. These are 
+necessary to run the code and if you don't have these folders `pose_utils.py` will complain. 
 
 ## Running our Code
 
 You can run a showcase of our correction system in this 
 [jupyter notebook](https://gitlab.com/aglavac/cs-503-visual-intelligence/-/blob/main/notebooks/pose_correction_pipeline.ipynb).
 
-You can add your own images under the test folder to see how it works on you! 0 signifies an incorrect pose and 1 a correct pose. 
+You can add your own images under the test folder to see how it works on you!
+1. Take a photo of yourself performing one of the 3 yoga poses
+2. Add the photo to the correct folder under `test`. 0 represents an incorrect pose, 1 represents a correct pose.
 
 If you are interested in rerunning the individual steps we display there, this is how you would do it.
 
