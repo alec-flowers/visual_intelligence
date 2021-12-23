@@ -6,7 +6,7 @@
 
 We provide a framework for correcting 3D human poses, showcased on the example of yoga poses.
 
-[Accompanying Report](TODO INSERT LINK)
+[Accompanying Report](learning_proper_pose_report.pdf)
 
 ## Software dependencies
 
