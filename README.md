@@ -32,12 +32,12 @@ The code contained in this repository was tested on the following configuration 
 `pytorch-lightning>=1.5.4`
 
 ## Installation Guide
-
+#### Packages
 ```bash
 pip3 install -r requirements.txt
 ```
 
-## Data Download
+#### Data Download
 1. To use our data go to [DATA LINK](https://drive.google.com/drive/folders/1JxBM7r1Y8j3aFGCrnUgBDihJm51d70NA?usp=sharing)
 and download the `train_text_pickled_data.zip`. Note it is 2.2 GB. 
 
